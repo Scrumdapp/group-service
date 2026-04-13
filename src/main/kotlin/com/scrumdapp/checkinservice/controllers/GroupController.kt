@@ -2,10 +2,8 @@ package com.scrumdapp.checkinservice.controllers
 
 import com.scrumdapp.checkinservice.dto.group.GroupDto
 import com.scrumdapp.checkinservice.services.GroupService
-import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 
 @RestController
 @RequestMapping("/groups")
@@ -18,26 +16,23 @@ class GroupController(
         groupService.getAll()
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Int): GroupDto =
-        groupService.getById(id)
+    fun getById(@PathVariable id: Int): ResponseEntity<GroupDto> =
+        ResponseEntity.ok(groupService.getById(id))
 
     @PostMapping
-    fun create(@Valid @RequestBody dto: GroupDto): ResponseEntity<GroupDto> {
-        val created = groupService.create(dto)
-        return ResponseEntity
-            .created(URI.create("/groups/${created.id}"))
-            .body(created)
-    }
+    fun create(@RequestBody dto: GroupDto): ResponseEntity<GroupDto> =
+        ResponseEntity.ok(groupService.create(dto))
 
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: Int,
         @RequestBody dto: GroupDto
-    ): GroupDto =
-        groupService.update(id, dto)
+    ): ResponseEntity<GroupDto> =
+        ResponseEntity.ok(groupService.update(id, dto))
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: Int) {
+    fun delete(@PathVariable id: Int): ResponseEntity<Void> {
         groupService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }
