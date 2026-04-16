@@ -20,6 +20,9 @@ class Group {
     @Column(nullable = false)
     var name: String? = null
 
+    @Column(nullable = false)
+    var group_owner: Int = 0
+
     @Column(nullable = true)
     var background_preference: Int? = null
 

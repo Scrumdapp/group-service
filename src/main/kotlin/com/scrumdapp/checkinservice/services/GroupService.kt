@@ -1,8 +1,13 @@
 package com.scrumdapp.checkinservice.services
 
-import com.scrumdapp.checkinservice.dto.group.GroupDto
+import com.scrumdapp.checkinservice.dto.CreateGroupDto
+import com.scrumdapp.checkinservice.dto.GroupResponseDto
+import com.scrumdapp.checkinservice.dto.UpdateGroupDto
 import com.scrumdapp.checkinservice.mappers.GroupMapper
 import com.scrumdapp.checkinservice.repositories.GroupRepository
+import com.scrumdapp.checkinservice.exceptions.NotFoundException
+import com.scrumdapp.checkinservice.exceptions.ForbiddenException
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -10,39 +15,56 @@ class GroupService(
     private val groupRepository: GroupRepository
 ) {
 
-    fun getAll(): List<GroupDto> {
-        return groupRepository.findAll()
-            .map { GroupMapper.toDto(it) }
+    fun getAll(page: Int, size: Int): List<GroupResponseDto> {
+        val pageable = PageRequest.of(page, size)
+
+        return groupRepository.findAll(pageable)
+            .map(GroupMapper::toResponseDto)
+            .content
     }
 
-    fun getById(id: Int): GroupDto {
+    fun getById(id: Int): GroupResponseDto {
         val group = groupRepository.findById(id)
-            .orElseThrow { RuntimeException("Group not found") }
+            .orElseThrow { NotFoundException("Group with id $id not found") }
 
-        return GroupMapper.toDto(group)
+        return GroupMapper.toResponseDto(group)
     }
 
-    fun create(dto: GroupDto): GroupDto {
-        val entity = GroupMapper.toEntity(dto)
-        val saved = groupRepository.save(entity)
-        return GroupMapper.toDto(saved)
-    }
-
-    fun update(id: Int, dto: GroupDto): GroupDto {
-        val existing = groupRepository.findById(id)
-            .orElseThrow { RuntimeException("Group not found") }
-
-        existing.name = dto.name
-        existing.background_preference = dto.backgroundPreference
-        existing.is_active = dto.isActive
-
-        return GroupMapper.toDto(groupRepository.save(existing))
-    }
-
-    fun delete(id: Int) {
-        if (!groupRepository.existsById(id)) {
-            throw RuntimeException("Group not found")
+    fun create(dto: CreateGroupDto, role: String): GroupResponseDto {
+        if (role != "docent") {
+            throw ForbiddenException("Only teachers (docent) can create groups")
         }
+
+        val group = GroupMapper.fromCreateDto(dto)
+        val saved = groupRepository.save(group)
+
+        return GroupMapper.toResponseDto(saved)
+    }
+
+    fun update(id: Int, dto: UpdateGroupDto, currentUserId: Int): GroupResponseDto {
+        val existing = groupRepository.findById(id)
+            .orElseThrow { NotFoundException("Group with id $id not found") }
+
+        if (existing.group_owner != currentUserId) {
+            throw ForbiddenException("You are not the owner of this group")
+        }
+
+        val updated = GroupMapper.updateFromDto(existing, dto)
+        val saved = groupRepository.save(updated)
+
+        return GroupMapper.toResponseDto(saved)
+    }
+
+    fun delete(id: Int, currentUserId: Int) {
+        val existing = groupRepository.findById(id)
+            .orElseThrow { NotFoundException("Group with id $id not found") }
+
+        if (existing.group_owner != currentUserId) {
+            throw ForbiddenException("You are not the owner of this group")
+        }
+
         groupRepository.deleteById(id)
     }
+
+
 }

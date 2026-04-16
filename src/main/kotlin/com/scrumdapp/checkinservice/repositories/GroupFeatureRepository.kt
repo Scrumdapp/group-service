@@ -4,8 +4,6 @@ import com.scrumdapp.checkinservice.entities.GroupFeature
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface GroupFeatureRepository : JpaRepository<GroupFeature, Int>{
-    fun findByKey(key: String): GroupFeature?
-    fun key(key: Int): MutableList<GroupFeature>
-
+    fun findByKey(key: Int, string: String): List<GroupFeature>
 
 }
