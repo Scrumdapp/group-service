@@ -3,18 +3,18 @@ package com.scrumdapp.checkinservice.entities
 import jakarta.persistence.*
 import java.io.Serializable
 
-@Embeddable
-data class GroupUsersId(var userId: Int = 0, var groupId: Int = 0) : Serializable
-
 @Entity
-@Table(name = "GroupUsers")
+@Table(name = "group_users")
 class GroupUsers {
 
-    @EmbeddedId
-    var id: GroupUsersId = GroupUsersId()
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Int = 0
+
+    @Column(name = "user_id", nullable = false)
+    var user: Int = 0
 
     @ManyToOne
-    @MapsId("groupId")
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "group_id", nullable = false)
     var group: Group? = null
 }

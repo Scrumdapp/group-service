@@ -15,7 +15,7 @@ class GroupController(
     private val groupService: GroupService
 ) {
 
-    private fun getCurrentUserId(): Int = 5
+    private fun getCurrentUserId(): Int = 1
 
     private fun getCurrentUserRole(): String = "student"
 
@@ -25,7 +25,7 @@ class GroupController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int
     ): List<GroupResponseDto> {
-        return groupService.getAll(page, size)
+        return groupService.getAll(page, size, getCurrentUserId())
     }
 
 

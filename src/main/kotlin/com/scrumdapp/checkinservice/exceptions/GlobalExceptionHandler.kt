@@ -1,6 +1,7 @@
 package com.scrumdapp.checkinservice.exceptions
 
 import org.springframework.http.ResponseEntity
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
@@ -30,4 +31,5 @@ class GlobalExceptionHandler {
                 )
             )
     }
+
 }

@@ -5,22 +5,21 @@ import com.scrumdapp.checkinservice.dto.GroupResponseDto
 import com.scrumdapp.checkinservice.dto.UpdateGroupDto
 import com.scrumdapp.checkinservice.mappers.GroupMapper
 import com.scrumdapp.checkinservice.repositories.GroupRepository
+import com.scrumdapp.checkinservice.repositories.GroupUsersRepository
 import com.scrumdapp.checkinservice.exceptions.NotFoundException
 import com.scrumdapp.checkinservice.exceptions.ForbiddenException
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
 class GroupService(
-    private val groupRepository: GroupRepository
+    private val groupRepository: GroupRepository,
+    private val groupUsersRepository: GroupUsersRepository
 ) {
 
-    fun getAll(page: Int, size: Int): List<GroupResponseDto> {
-        val pageable = PageRequest.of(page, size)
-
-        return groupRepository.findAll(pageable)
+    fun getAll(page: Int, size: Int, userId: Int): List<GroupResponseDto> {
+        return groupUsersRepository.findByUser(userId)
+            .mapNotNull { it.group }
             .map(GroupMapper::toResponseDto)
-            .content
     }
 
     fun getById(id: Int): GroupResponseDto {
@@ -65,6 +64,4 @@ class GroupService(
 
         groupRepository.deleteById(id)
     }
-
-
 }

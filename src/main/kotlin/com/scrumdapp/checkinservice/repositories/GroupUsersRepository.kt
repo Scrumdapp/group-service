@@ -1,13 +1,11 @@
 package com.scrumdapp.checkinservice.repositories
 
 import com.scrumdapp.checkinservice.entities.GroupUsers
-import com.scrumdapp.checkinservice.entities.GroupUsersId
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface GroupUsersRepository : JpaRepository<GroupUsers, GroupUsersId> {
+interface GroupUsersRepository : JpaRepository<GroupUsers, Int> {
 
-    fun findByIdGroupId(groupId: Int): List<GroupUsers>
+    fun findByUser(userId: Int): List<GroupUsers>
 
-    fun findByIdUserId(userId: Int): List<GroupUsers>
-
+    fun findByGroupId(groupId: Int): List<GroupUsers>
 }
