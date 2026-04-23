@@ -1,3 +1,4 @@
+CREATE SEQUENCE IF NOT EXISTS users_seq START WITH 1 INCREMENT BY 50;
 
 CREATE TABLE group_features
 (
@@ -25,8 +26,22 @@ CREATE TABLE groups
     CONSTRAINT pk_groups PRIMARY KEY (id)
 );
 
+CREATE TABLE users
+(
+    id         INTEGER NOT NULL,
+    discord_id BIGINT,
+    first_name VARCHAR(255),
+    last_name  VARCHAR(255),
+    avatar_url VARCHAR(255),
+    role       VARCHAR(255),
+    CONSTRAINT pk_users PRIMARY KEY (id)
+);
+
 ALTER TABLE group_features
     ADD CONSTRAINT FK_GROUP_FEATURES_ON_GROUP FOREIGN KEY (group_id) REFERENCES groups (id);
 
 ALTER TABLE group_users
     ADD CONSTRAINT FK_GROUP_USERS_ON_GROUP FOREIGN KEY (group_id) REFERENCES groups (id);
+
+ALTER TABLE group_users
+    ADD CONSTRAINT FK_GROUP_USERS_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);

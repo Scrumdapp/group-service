@@ -11,8 +11,9 @@ class GroupUsers {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int = 0
 
-    @Column(name = "user_id", nullable = false)
-    var user: Int = 0
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    var user: User? = null
 
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
