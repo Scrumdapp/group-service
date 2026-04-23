@@ -11,12 +11,14 @@ import com.scrumdapp.checkinservice.exceptions.NotFoundException
 import com.scrumdapp.checkinservice.exceptions.ForbiddenException
 import org.springframework.stereotype.Service
 import com.scrumdapp.checkinservice.repositories.GroupFeatureRepository
+import com.scrumdapp.checkinservice.repositories.UserRepository
 
 @Service
 class GroupService(
     private val groupRepository: GroupRepository,
     private val groupUsersRepository: GroupUsersRepository,
     private val groupFeatureRepository: GroupFeatureRepository,
+    private val userRepository: UserRepository,
 ) {
 
     fun getAll(userId: Int): List<GroupResponseDto> {
@@ -33,15 +35,18 @@ class GroupService(
     }
 
     fun create(dto: CreateGroupDto, role: String, userId: Int): GroupResponseDto {
+
+        var user = userRepository.findUserById(userId) ?: throw NotFoundException("User with id $userId not found")
+
         if (role != "docent") {
             throw ForbiddenException("Only teachers (docent) can create groups")
         }
 
-        val group = GroupMapper.fromCreateDto(dto, userId)
+        val group = GroupMapper.fromCreateDto(dto, user.id)
         val saved = groupRepository.save(group)
 
         val groupUser = GroupUsers().apply {
-            user = userId
+            this.user = user
             this.group = saved
         }
         groupUsersRepository.save(groupUser)
