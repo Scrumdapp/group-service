@@ -13,9 +13,9 @@ class GroupUsers {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    var user: User? = null
+    lateinit var user: User
 
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
-    var group: Group? = null
+    lateinit var group: Group
 }

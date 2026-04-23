@@ -1,5 +1,6 @@
 package com.scrumdapp.checkinservice.controllers
 
+import com.scrumdapp.checkinservice.dto.PassportDto
 import com.scrumdapp.checkinservice.dto.UserPatchDto
 import com.scrumdapp.checkinservice.dto.UserResponseDto
 import com.scrumdapp.checkinservice.services.UserService
@@ -41,6 +42,14 @@ class UserController(
 
         return userService.getByMutualId(userId, ownId)
     }
+
+    @GetMapping("/{userId}/passport")
+    fun generatePassport(
+        @PathVariable userId: Int
+    ): PassportDto {
+        return userService.getPassport(userId)
+    }
+
 
 //    @PatchMapping("/{userId}")
 //    fun updateUser(@PathVariable userId: Int, @RequestBody dto: UserPatchDto): UserResponseDto {

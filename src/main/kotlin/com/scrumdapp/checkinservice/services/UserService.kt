@@ -1,5 +1,6 @@
 package com.scrumdapp.checkinservice.services
 
+import com.scrumdapp.checkinservice.dto.PassportDto
 import com.scrumdapp.checkinservice.dto.UserCreateDto
 import com.scrumdapp.checkinservice.dto.UserPatchDto
 import com.scrumdapp.checkinservice.dto.UserResponseDto
@@ -16,6 +17,8 @@ interface UserService {
     fun getById(id: Int): UserResponseDto
     fun getByMutualId(id: Int, ownId: Int): UserResponseDto
     fun getByDiscordId(id: Long): UserResponseDto
+
+    fun getPassport(id: Int): PassportDto
 
     fun createUser(dto: UserCreateDto): UserResponseDto
     fun patchUser(dto: UserPatchDto, userId: Int): UserResponseDto
@@ -42,6 +45,18 @@ class UserServiceImpl(
     override fun getByDiscordId(id: Long): UserResponseDto {
         val user = userRepository.findByDiscordId(id) ?: throw NotFoundException("User with discordId $id not found")
         return user.toResponseDto()
+    }
+
+    override fun getPassport(id: Int): PassportDto {
+        val user = userRepository.findUserById(id) ?: throw NotFoundException("User with id $id not found")
+        val groupUser = groupUserRepository.findByUserId(id)
+        if (groupUser.isEmpty()) throw NotFoundException("User with id $id not found")
+        val passport = PassportDto(
+            userId = user.id,
+            groups = groupUser.map { it.group.id},
+            role = user.role
+        )
+        return passport
     }
 
     override fun createUser(dto: UserCreateDto): UserResponseDto {

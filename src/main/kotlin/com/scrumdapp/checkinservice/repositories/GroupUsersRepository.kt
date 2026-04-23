@@ -25,4 +25,5 @@ interface GroupUsersRepository : JpaRepository<GroupUsers, Int> {
         @Param("id2") userId2: Int,
     ): List<Group>
 
+    fun findByUserId(userId: Int): List<GroupUsers>
 }
