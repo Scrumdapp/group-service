@@ -8,15 +8,15 @@ object GroupFeatureMapper {
 
     fun toDto(entity: GroupFeature): GroupFeatureDto {
         return GroupFeatureDto(
-            key = entity.key,
+            key = entity.id,
             description = entity.description,
         )
     }
 
     fun toEntity(dto: GroupFeatureDto, group: Group): GroupFeature {
         val entity = GroupFeature()
-        entity.key = dto.key
         entity.group = group
+        entity.description = dto.description
         return entity
     }
 }

@@ -17,15 +17,12 @@ class GroupController(
 
     private fun getCurrentUserId(): Int = 1
 
-    private fun getCurrentUserRole(): String = "student"
+    private fun getCurrentUserRole(): String = "docent"
 
 
     @GetMapping
-    fun getAll(
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
-    ): List<GroupResponseDto> {
-        return groupService.getAll(page, size, getCurrentUserId())
+    fun getAll(): List<GroupResponseDto> {
+        return groupService.getAll(getCurrentUserId())
     }
 
 
@@ -39,7 +36,7 @@ class GroupController(
     fun create(
         @Valid @RequestBody dto: CreateGroupDto
     ): ResponseEntity<GroupResponseDto> {
-        val created = groupService.create(dto, getCurrentUserRole())
+        val created = groupService.create(dto, getCurrentUserRole(), getCurrentUserId())
 
         return ResponseEntity
             .created(URI.create("/groups/${created.id}"))
@@ -58,7 +55,7 @@ class GroupController(
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Int): ResponseEntity<Void> {
-        groupService.delete(id, getCurrentUserId())
+        groupService.delete(id, getCurrentUserRole(), getCurrentUserId())
         return ResponseEntity.noContent().build()
     }
 }

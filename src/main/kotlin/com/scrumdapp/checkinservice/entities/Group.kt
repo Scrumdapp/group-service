@@ -30,7 +30,7 @@ class Group {
     @Column(nullable = false)
     var is_active: Boolean = false
 
-    @OneToOne(mappedBy = "group", cascade = [CascadeType.ALL])
-    var feature: GroupFeature? = null
+    @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL])
+    var features: MutableList<GroupFeature> = mutableListOf()
 
 }
