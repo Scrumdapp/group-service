@@ -3,6 +3,7 @@ package com.scrumdapp.checkinservice.exceptions
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.NoHandlerFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -16,14 +17,14 @@ class GlobalExceptionHandler {
                 message = ex.message ?: "Unknown error"
             ))
     }
-
-    @ExceptionHandler(Exception::class)
-    fun handleGeneralException(ex: Exception): ResponseEntity<ApiResponse> {
-        return ResponseEntity
-            .status(500)
-            .body(ApiResponse(
-                code = 500,
-                message = "Something went wrong"
-            ))
-    }
+//
+//    @ExceptionHandler(Exception::class)
+//    fun handleGeneralException(ex: Exception): ResponseEntity<ApiResponse> {
+//        return ResponseEntity
+//            .status(500)
+//            .body(ApiResponse(
+//                code = 500,
+//                message = "Something went wrong"
+//            ))
+//    }
 }

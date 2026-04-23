@@ -19,3 +19,6 @@ class BadRequestException(message: String) :
 
 class UnauthorizedException(message: String) :
     AppException(message, HttpStatus.UNAUTHORIZED)
+
+class ServerFaultException(message: String) :
+    AppException(message, HttpStatus.INTERNAL_SERVER_ERROR)
