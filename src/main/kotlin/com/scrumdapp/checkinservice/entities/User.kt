@@ -1,5 +1,8 @@
 package com.scrumdapp.checkinservice.entities
 
+import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Convert
+import jakarta.persistence.Converter
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -9,7 +12,16 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 
 enum class UserRoles {
-    STUDENT, COACH
+    STUDENT, DOCENT
+}
+
+@Converter(autoApply = false)
+class UserRolesConverter : AttributeConverter<UserRoles, String> {
+    override fun convertToDatabaseColumn(attribute: UserRoles?): String? =
+        attribute?.name
+
+    override fun convertToEntityAttribute(dbData: String?): UserRoles? =
+        dbData?.let { UserRoles.valueOf(it.uppercase()) }
 }
 
 @Entity
@@ -27,7 +39,6 @@ class User {
 
     var avatarUrl: String? = null
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = UserRolesConverter::class)
     var role: UserRoles = UserRoles.STUDENT
-
 }

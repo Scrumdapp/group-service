@@ -2,6 +2,7 @@ package com.scrumdapp.checkinservice.services
 
 import com.scrumdapp.checkinservice.dto.CreateGroupDto
 import com.scrumdapp.checkinservice.dto.GroupResponseDto
+import com.scrumdapp.checkinservice.dto.PartialUserDto
 import com.scrumdapp.checkinservice.dto.UpdateGroupDto
 import com.scrumdapp.checkinservice.entities.GroupUsers
 import com.scrumdapp.checkinservice.mappers.GroupMapper
@@ -12,6 +13,7 @@ import com.scrumdapp.checkinservice.exceptions.ForbiddenException
 import org.springframework.stereotype.Service
 import com.scrumdapp.checkinservice.repositories.GroupFeatureRepository
 import com.scrumdapp.checkinservice.repositories.UserRepository
+import com.scrumdapp.checkinservice.mappers.toPartialUserDto
 
 @Service
 class GroupService(
@@ -26,6 +28,9 @@ class GroupService(
             .mapNotNull { it.group }
             .map(GroupMapper::toResponseDto)
     }
+
+    fun getUsersByGroupId(groupId: Int): List<PartialUserDto> =
+        groupUsersRepository.findByGroupId(groupId).map { it.toPartialUserDto() }
 
     fun getById(id: Int): GroupResponseDto {
         val group = groupRepository.findById(id)

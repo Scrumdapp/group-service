@@ -2,6 +2,7 @@ package com.scrumdapp.checkinservice.controllers
 
 import com.scrumdapp.checkinservice.dto.CreateGroupDto
 import com.scrumdapp.checkinservice.dto.GroupResponseDto
+import com.scrumdapp.checkinservice.dto.PartialUserDto
 import com.scrumdapp.checkinservice.dto.UpdateGroupDto
 import com.scrumdapp.checkinservice.services.GroupService
 import jakarta.validation.Valid
@@ -52,6 +53,10 @@ class GroupController(
         return groupService.update(id, dto, getCurrentUserId())
     }
 
+    @GetMapping("/{groupid}/users")
+    fun getUsers(@PathVariable groupid: Int): List<PartialUserDto> {
+        return groupService.getUsersByGroupId(groupid)
+    }
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Int): ResponseEntity<Void> {

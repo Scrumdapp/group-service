@@ -1,10 +1,13 @@
 package com.scrumdapp.checkinservice.exceptions
 
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
+@RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException::class)
@@ -19,6 +22,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGeneralException(ex: Exception): ResponseEntity<ApiResponse> {
+        ex.printStackTrace()
         return ResponseEntity
             .status(500)
             .body(ApiResponse(
