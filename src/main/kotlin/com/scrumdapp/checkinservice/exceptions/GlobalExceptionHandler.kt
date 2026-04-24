@@ -22,7 +22,6 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGeneralException(ex: Exception): ResponseEntity<ApiResponse> {
-        ex.printStackTrace()
         return ResponseEntity
             .status(500)
             .body(ApiResponse(
