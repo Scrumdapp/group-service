@@ -8,7 +8,7 @@ class GroupUsers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Int = 0
+    var id: Long = 0
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

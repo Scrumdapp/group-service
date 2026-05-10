@@ -15,12 +15,12 @@ class GroupFeature(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Int = 0,
+    var id: Long = 0,
 
     @ManyToOne
     @JoinColumn(name = "group_id")
     var group: Group? = null,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 64)
     var description: String? = null
 )
