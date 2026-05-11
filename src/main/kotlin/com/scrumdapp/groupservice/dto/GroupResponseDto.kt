@@ -2,7 +2,7 @@ package com.scrumdapp.groupservice.dto
 
 
 data class GroupResponseDto(
-    val id: Int,
+    val id: Long,
     val name: String?,
     val backgroundPreference: Int?,
     val isActive: Boolean,
