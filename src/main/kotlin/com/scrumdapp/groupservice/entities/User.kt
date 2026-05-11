@@ -1,6 +1,7 @@
 package com.scrumdapp.groupservice.entities
 
 import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.Converter
 import jakarta.persistence.Entity
@@ -28,15 +29,19 @@ class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    val id: Int = 0
+    val id: Long = 0
 
     var discordId: Long? = null
 
+    @Column(length = 64)
     var firstName: String? = null
+
+    @Column(length = 64)
     var lastName: String? = null
 
     var avatarUrl: String? = null
 
     @Convert(converter = UserRolesConverter::class)
+    @Column(length = 64)
     var role: UserRoles = UserRoles.STUDENT
 }

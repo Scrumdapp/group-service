@@ -15,9 +15,9 @@ class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Int = 0
+    var id: Long = 0
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 64)
     var name: String? = null
 
     @Column(nullable = false)

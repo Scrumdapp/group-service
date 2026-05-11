@@ -2,9 +2,10 @@ package com.scrumdapp.groupservice.dto
 
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 
 data class UpdateGroupDto(
-    @Min(3)
+    @field:Size(min = 3, max = 64)
     val name: String?,
     @Pattern(
         regexp = "^[a-zA-Z0-9#!?]+([ ][a-zA-Z0-9#!?]+)*$",
