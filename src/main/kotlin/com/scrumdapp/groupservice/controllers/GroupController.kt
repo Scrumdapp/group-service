@@ -1,5 +1,6 @@
 package com.scrumdapp.groupservice.controllers
 
+import com.scrumdapp.groupservice.dto.AddUserDto
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
@@ -51,6 +52,14 @@ class GroupController(
         @Valid @RequestBody dto: UpdateGroupDto
     ): GroupResponseDto {
         return groupService.update(id, dto, getCurrentUserId())
+    }
+    @PostMapping("/{groupId}/users")
+    fun addUser(
+        @PathVariable groupId: Int,
+        @RequestBody dto: AddUserDto
+    ): ResponseEntity<Void> {
+        groupService.addUser(groupId, dto.userId)
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{groupid}/users")

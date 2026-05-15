@@ -3,7 +3,7 @@ package com.scrumdapp.groupservice.dto
 import jakarta.validation.constraints.Size
 
 data class UserResponseDto(
-    val id: Int,
+    val id: Long,
     val discordId: Long?,
 
     val firstName: String? = null,
