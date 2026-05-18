@@ -19,12 +19,12 @@ object GroupMapper {
             users = emptyList()
         )
 
-    fun fromCreateDto(dto: CreateGroupDto, ownerId: Int): Group =
+    fun fromCreateDto(dto: CreateGroupDto, ownerId: Long): Group =
         Group().apply {
             name = dto.name
             background_preference = dto.backgroundPreference
             is_active = true
-            group_owner = ownerId
+            group_owner = ownerId.toInt()
         }
 
     fun updateFromDto(group: Group, dto: UpdateGroupDto): Group =

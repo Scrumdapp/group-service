@@ -73,6 +73,20 @@ class GroupService(
         return GroupMapper.toResponseDto(saved)
     }
 
+    fun addUser(groupId: Int, userId: Int) {
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+
+        val user = userRepository.findUserById(userId)
+            ?: throw NotFoundException("User with id $userId not found")
+
+        val groupUser = GroupUsers().apply {
+            this.user = user
+            this.group = group
+        }
+        groupUsersRepository.save(groupUser)
+    }
+
     fun delete(id: Int, role: String, currentUserId: Int) {
         val existing = groupRepository.findById(id)
             .orElseThrow { NotFoundException("Group with id $id not found") }
