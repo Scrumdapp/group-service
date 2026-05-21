@@ -2,9 +2,11 @@ package com.scrumdapp.groupservice.mappers
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.Group
 import com.scrumdapp.groupservice.entities.GroupFeature
+import com.scrumdapp.groupservice.services.PartialUser
 
 object GroupMapper {
 
@@ -24,7 +26,7 @@ object GroupMapper {
             name = dto.name
             background_preference = dto.backgroundPreference
             is_active = true
-            group_owner = ownerId.toInt()
+            group_owner = ownerId
         }
 
     fun updateFromDto(group: Group, dto: UpdateGroupDto): Group =
@@ -33,4 +35,11 @@ object GroupMapper {
             dto.backgroundPreference?.let { background_preference = it }
             dto.isActive?.let { is_active = it }
         }
+
+    fun toPartialResponseDto(groupId: Long, user: PartialUser): PartialUserDto =
+        PartialUserDto(
+            groupId = groupId,
+            userId = user.id,
+            name = user.name,
+        )
 }

@@ -1,6 +1,5 @@
 package com.scrumdapp.groupservice.dto
 
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 

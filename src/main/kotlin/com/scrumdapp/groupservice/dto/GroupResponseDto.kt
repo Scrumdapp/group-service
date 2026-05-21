@@ -11,5 +11,5 @@ data class GroupResponseDto(
     val isActive: Boolean,
     val feature: GroupFeatureDto?,
     val users: List<GroupUserDto>,
-    val groupOwner: Int
+    val groupOwner: Long
 )
