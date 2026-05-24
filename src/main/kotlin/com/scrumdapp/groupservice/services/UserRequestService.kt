@@ -22,7 +22,7 @@ data class PartialUser(
 @Service
 class UserRequestService(
     @Value($$"${USER_SERVICE_URL}") private val baseUrl: String,
-    @Value($$"${USER_FETCH_ENDPOINT") private val fetchEndpoint: String = "/users/partial",
+    @Value($$"${USER_FETCH_ENDPOINT}") private val fetchEndpoint: String = "/users",
     @Value($$"${spring.application.name}") private val appName: String
 ) {
 
@@ -32,7 +32,7 @@ class UserRequestService(
 
     fun fetchUsers(jwt: Jwt, ids: List<Long>): List<PartialUser> {
 
-        val uri = "$fetchEndpoint?id=${ids.joinToString(",")}"
+        val uri = "$fetchEndpoint?partial=true&id=${ids.joinToString(",")}"
 
         try {
             val res = reqBuilder.get()

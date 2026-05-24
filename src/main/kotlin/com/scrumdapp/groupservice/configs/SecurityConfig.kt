@@ -21,7 +21,9 @@ class SecurityConfig(
             .csrf { it.disable() }
             .usePassport(passportAuthFilter)
             .authorizeHttpRequests {
-                it.requestMatchers(HttpMethod.GET, "/groups/*").hasAnyAuthority("STUDENT", "COACH", "GATEWAY")
+                it.requestMatchers(HttpMethod.GET, "/groups").hasAnyAuthority("STUDENT", "COACH")
+                it.requestMatchers(HttpMethod.GET, "/groups/user/*").hasAuthority("GATEWAY")
+                it.requestMatchers(HttpMethod.GET, "/groups/**").hasAnyAuthority("STUDENT", "COACH", "GATEWAY")
                 it.requestMatchers((HttpMethod.POST), "/groups/**").hasAuthority("COACH")
                 it.requestMatchers(HttpMethod.PATCH, "/groups/**").hasAuthority("COACH")
                 it.requestMatchers(HttpMethod.DELETE, "/groups/**").hasAuthority("COACH")

@@ -28,6 +28,7 @@ class GroupController(
     fun getAll(
         @Passport passport: PassportContent
     ): List<GroupResponseDto> {
+        println(passport.userId)
         return groupService.getAll(passport.userId.toLong())
     }
 
@@ -38,6 +39,14 @@ class GroupController(
         @Passport passport: PassportContent
     ): GroupResponseDto {
         return groupService.getById(id, passport.userId.toLong())
+    }
+
+    @GetMapping("/user/{userId}")
+    fun getByUserId(
+        @PathVariable userId: Long,
+
+    ): List<GroupResponseDto> {
+        return groupService.getAll(userId)
     }
 
 
