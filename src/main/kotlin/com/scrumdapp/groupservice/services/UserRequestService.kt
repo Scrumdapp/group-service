@@ -32,13 +32,12 @@ class UserRequestService(
 
     fun fetchUsers(jwt: Jwt, ids: List<Long>): List<PartialUser> {
 
-        val uri = "$fetchEndpoint?partial=true&id=${ids.joinToString(",")}"
+        val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
 
         try {
             val res = reqBuilder.get()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, "bearer ${jwt.tokenValue}")
-                .header(HttpHeaders.VIA, appName)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toEntity<String>()

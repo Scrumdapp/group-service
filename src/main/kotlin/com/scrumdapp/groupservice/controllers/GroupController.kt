@@ -3,6 +3,7 @@ package com.scrumdapp.groupservice.controllers
 import com.scrumdapp.groupservice.dto.AddUserDto
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.services.GroupService
@@ -10,6 +11,8 @@ import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -27,9 +30,8 @@ class GroupController(
     @GetMapping
     fun getAll(
         @Passport passport: PassportContent
-    ): List<GroupResponseDto> {
-        println(passport.userId)
-        return groupService.getAll(passport.userId.toLong())
+    ): List<PartialGroupResponseDto> {
+        return groupService.getAllPartial(passport.userId.toLong())
     }
 
 
@@ -41,6 +43,7 @@ class GroupController(
         return groupService.getById(id, passport.userId.toLong())
     }
 
+    // Generally only used for the creation of passports
     @GetMapping("/user/{userId}")
     fun getByUserId(
         @PathVariable userId: Long,
@@ -62,7 +65,7 @@ class GroupController(
             .body(created)
     }
 
-    @PutMapping("/{groupId}")
+    @PatchMapping("/{groupId}")
     fun update(
         @PathVariable groupId: Long,
         @Valid @RequestBody dto: UpdateGroupDto,
@@ -70,13 +73,13 @@ class GroupController(
     ): GroupResponseDto {
         return groupService.update(groupId, dto, passport.userId.toLong())
     }
+
     @PostMapping("/{groupId}/users")
     fun addUser(
         @PathVariable groupId: Long,
         @RequestBody dto: AddUserDto
-    ): ResponseEntity<Void> {
-        groupService.addUser(groupId, dto.userId)
-        return ResponseEntity.noContent().build()
+    ): PartialUserDto {
+        return groupService.addUser(groupId, dto.user_id)
     }
 
     @GetMapping("/{groupId}/users")

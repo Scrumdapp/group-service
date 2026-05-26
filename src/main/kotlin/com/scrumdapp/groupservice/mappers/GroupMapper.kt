@@ -2,6 +2,7 @@ package com.scrumdapp.groupservice.mappers
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.Group
@@ -14,17 +15,22 @@ object GroupMapper {
         GroupResponseDto(
             id = group.id,
             name = group.name,
-            groupOwner = group.group_owner,
-            backgroundPreference = group.background_preference,
-            isActive = group.is_active,
-            feature = features.firstOrNull()?.let { GroupFeatureMapper.toDto(it) },
-            users = emptyList()
+            group_owner = group.group_owner,
+            background_preference = group.background_preference,
+            is_active = group.is_active,
+            feature = features.map { it.id }
+        )
+
+    fun toPartialDto(group: Group): PartialGroupResponseDto =
+        PartialGroupResponseDto(
+            id = group.id,
+            name = group.name,
+            background_preference = group.background_preference ?: 0
         )
 
     fun fromCreateDto(dto: CreateGroupDto, ownerId: Long): Group =
         Group().apply {
             name = dto.name
-            background_preference = dto.backgroundPreference
             is_active = true
             group_owner = ownerId
         }
@@ -32,14 +38,17 @@ object GroupMapper {
     fun updateFromDto(group: Group, dto: UpdateGroupDto): Group =
         group.apply {
             dto.name?.let { name = it }
-            dto.backgroundPreference?.let { background_preference = it }
-            dto.isActive?.let { is_active = it }
+            dto.background_preference?.let { background_preference = it }
+            dto.is_active?.let { is_active = it }
         }
 
-    fun toPartialResponseDto(groupId: Long, user: PartialUser): PartialUserDto =
-        PartialUserDto(
-            groupId = groupId,
-            userId = user.id,
-            name = user.name,
+    fun toGroupUserResponseDto(groupId: Long, user: PartialUser): PartialUserDto {
+        val fullName = user.name.split(" ")
+        return PartialUserDto(
+            group_id = groupId,
+            user_id = user.id,
+            first_name = fullName[0],
+            last_name = fullName.drop(1).joinToString()
         )
+    }
 }

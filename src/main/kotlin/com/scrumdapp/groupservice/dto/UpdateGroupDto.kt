@@ -10,6 +10,6 @@ data class UpdateGroupDto(
         regexp = "^[a-zA-Z0-9#!?]+([ ][a-zA-Z0-9#!?]+)*$",
         message = "Only a-z, A-Z, 1-9, # ! ? allowed"
     )
-    val backgroundPreference: Int?,
-    val isActive: Boolean?
+    val background_preference: Int?,
+    val is_active: Boolean?
 )

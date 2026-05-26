@@ -2,6 +2,7 @@ package com.scrumdapp.groupservice.services
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.GroupUsers
@@ -30,12 +31,21 @@ class GroupService(
             .map(GroupMapper::toResponseDto)
     }
 
+    fun getAllPartial(userId: Long): List<PartialGroupResponseDto> {
+        return groupUsersRepository.findByUser(userId)
+            .map { it.group }
+            .map { GroupMapper.toPartialDto(it) }
+    }
+
     fun getPartialUsers(groupId: Long, userId: Long): List<PartialUserDto> {
         val groupUsers = groupUsersRepository.findByGroupId(groupId)
         if (groupUsers.isEmpty() || groupUsers.find { it.user == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
 
+        println(groupUsers.first().user)
+
         val groupUser = fetchUsernames(groupUsers.map { it.user })
-        return groupUser.map { GroupMapper.toPartialResponseDto(groupId, it) }
+        println(groupUser.first())
+        return groupUser.map { GroupMapper.toGroupUserResponseDto(groupId, it) }
     }
 
     fun getById(groupId: Long, userId: Long): GroupResponseDto {
@@ -83,7 +93,7 @@ class GroupService(
         return GroupMapper.toResponseDto(saved)
     }
 
-    fun addUser(groupId: Long, userId: Long) {
+    fun addUser(groupId: Long, userId: Long): PartialUserDto {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
@@ -91,7 +101,11 @@ class GroupService(
             this.user = userId
             this.group = group
         }
-        groupUsersRepository.save(groupUser)
+
+        val newGroupUser = groupUsersRepository.save(groupUser)
+
+        val userName = fetchUsernames(listOf(userId)).first()
+        return GroupMapper.toGroupUserResponseDto(newGroupUser.group.id, userName)
     }
 
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {
@@ -113,7 +127,8 @@ class GroupService(
     }
 
     private fun fetchUsernames(ids: List<Long>): List<PartialUser> {
-        val principal = SecurityContextHolder.getContext().authentication as Jwt
-        return userRequestService.fetchUsers(principal, ids)
+        val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
+            ?: throw IllegalStateException("Auth principal couldn't be found or isn't a valid jwt. To prevent the endpoint is protected.")
+        return userRequestService.fetchUsers(jwt, ids)
     }
 }

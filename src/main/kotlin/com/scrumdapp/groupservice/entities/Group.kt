@@ -18,7 +18,7 @@ class Group {
     var id: Long = 0
 
     @Column(nullable = false, length = 64)
-    var name: String? = null
+    var name: String = ""
 
     @Column(nullable = false)
     var group_owner: Long = 0

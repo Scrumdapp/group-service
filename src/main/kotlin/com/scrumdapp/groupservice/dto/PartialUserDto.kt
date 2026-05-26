@@ -1,7 +1,8 @@
 package com.scrumdapp.groupservice.dto
 
 data class PartialUserDto (
-    val userId: Long,
-    val groupId: Long,
-    val name: String,
+    val user_id: Long,
+    val group_id: Long,
+    val first_name: String,
+    val last_name: String,
 )
