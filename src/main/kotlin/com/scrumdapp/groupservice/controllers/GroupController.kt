@@ -3,11 +3,16 @@ package com.scrumdapp.groupservice.controllers
 import com.scrumdapp.groupservice.dto.AddUserDto
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.services.GroupService
+import com.scrumdapp.passportplugin.annotations.Passport
+import com.scrumdapp.passportplugin.jwt.PassportContent
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -23,53 +28,74 @@ class GroupController(
 
 
     @GetMapping
-    fun getAll(): List<GroupResponseDto> {
-        return groupService.getAll(getCurrentUserId())
+    fun getAll(
+        @Passport passport: PassportContent
+    ): List<PartialGroupResponseDto> {
+        return groupService.getAllPartial(passport.userId.toLong())
     }
 
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Int): GroupResponseDto {
-        return groupService.getById(id)
+    fun getById(
+        @PathVariable id: Long,
+        @Passport passport: PassportContent
+    ): GroupResponseDto {
+        return groupService.getById(id, passport.userId.toLong())
+    }
+
+    // Generally only used for the creation of passports
+    @GetMapping("/user/{userId}")
+    fun getByUserId(
+        @PathVariable userId: Long,
+
+    ): List<GroupResponseDto> {
+        return groupService.getAll(userId)
     }
 
 
     @PostMapping
     fun create(
-        @Valid @RequestBody dto: CreateGroupDto
+        @Valid @RequestBody dto: CreateGroupDto,
+        @Passport passport: PassportContent
     ): ResponseEntity<GroupResponseDto> {
-        val created = groupService.create(dto, getCurrentUserRole(), getCurrentUserId())
+        val created = groupService.create(dto, getCurrentUserRole(), passport.userId.toLong())
 
         return ResponseEntity
             .created(URI.create("/groups/${created.id}"))
             .body(created)
     }
 
-
-    @PutMapping("/{id}")
+    @PatchMapping("/{groupId}")
     fun update(
-        @PathVariable id: Int,
-        @Valid @RequestBody dto: UpdateGroupDto
+        @PathVariable groupId: Long,
+        @Valid @RequestBody dto: UpdateGroupDto,
+        @Passport passport: PassportContent
     ): GroupResponseDto {
-        return groupService.update(id, dto, getCurrentUserId())
+        return groupService.update(groupId, dto, passport.userId.toLong())
     }
+
     @PostMapping("/{groupId}/users")
     fun addUser(
-        @PathVariable groupId: Int,
+        @PathVariable groupId: Long,
         @RequestBody dto: AddUserDto
+    ): PartialUserDto {
+        return groupService.addUser(groupId, dto.user_id)
+    }
+
+    @GetMapping("/{groupId}/users")
+    fun getUsers(
+        @PathVariable groupId: Long,
+        @Passport passport: PassportContent
+    ): List<PartialUserDto> {
+        return groupService.getPartialUsers(groupId, passport.userId.toLong())
+    }
+
+    @DeleteMapping("/{groupId}")
+    fun delete(
+        @PathVariable groupId: Long,
+        @Passport passport: PassportContent
     ): ResponseEntity<Void> {
-        groupService.addUser(groupId, dto.userId)
-        return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping("/{groupid}/users")
-    fun getUsers(@PathVariable groupid: Int): List<PartialUserDto> {
-        return groupService.getUsersByGroupId(groupid)
-    }
-
-    @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: Int): ResponseEntity<Void> {
-        groupService.delete(id, getCurrentUserRole(), getCurrentUserId())
+        groupService.deactivate(groupId, passport)
         return ResponseEntity.noContent().build()
     }
 }

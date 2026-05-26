@@ -1,15 +1,16 @@
 package com.scrumdapp.groupservice.dto
 
-import jakarta.validation.constraints.Size
-
+data class PartialGroupResponseDto(
+    val id: Long,
+    val name: String,
+    val background_preference: Int,
+)
 
 data class GroupResponseDto(
     val id: Long,
-    @field:Size(min = 3, max = 64)
     val name: String?,
-    val backgroundPreference: Int?,
-    val isActive: Boolean,
-    val feature: GroupFeatureDto?,
-    val users: List<GroupUserDto>,
-    val groupOwner: Int
+    val background_preference: Int?,
+    val is_active: Boolean,
+    val feature: List<Long>,
+    val group_owner: Long
 )

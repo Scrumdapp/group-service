@@ -1,5 +1,5 @@
 package com.scrumdapp.groupservice.dto
 
 data class AddUserDto(
-    val userId: Int
+    val user_id: Long
 )
