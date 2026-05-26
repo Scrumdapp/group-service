@@ -24,7 +24,7 @@ class GroupService(
 ) {
 
     fun getAll(userId: Int): List<GroupResponseDto> {
-        return groupUsersRepository.findByUser(userId)
+        return groupUsersRepository.findByUserId(userId)
             .mapNotNull { it.group }
             .map(GroupMapper::toResponseDto)
     }
