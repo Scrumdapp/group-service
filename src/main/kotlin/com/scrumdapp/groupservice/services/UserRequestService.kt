@@ -37,7 +37,8 @@ class UserRequestService(
         try {
             val res = reqBuilder.get()
                 .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, "bearer ${jwt.tokenValue}")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer ${jwt.tokenValue}")
+                .header(HttpHeaders.VIA, appName)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toEntity<String>()

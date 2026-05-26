@@ -41,10 +41,7 @@ class GroupService(
         val groupUsers = groupUsersRepository.findByGroupId(groupId)
         if (groupUsers.isEmpty() || groupUsers.find { it.user == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
 
-        println(groupUsers.first().user)
-
         val groupUser = fetchUsernames(groupUsers.map { it.user })
-        println(groupUser.first())
         return groupUser.map { GroupMapper.toGroupUserResponseDto(groupId, it) }
     }
 
