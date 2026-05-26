@@ -1,0 +1,121 @@
+operations:
+  - create_table:
+      name: groups
+      columns:
+        - generated:
+            identity:
+              user_specified_values: BY DEFAULT
+          name: id
+          type: bigint
+
+        - name: name
+          type: varchar(64)
+
+        - name: group_owner
+          type: bigint
+
+        - name: background_preference
+          nullable: true
+          type: int
+
+        - name: is_active
+          type: boolean
+
+      constraints:
+        - columns:
+            - id
+          name: pk_groups
+          type: primary_key
+
+  - create_table:
+      name: group_features
+      columns:
+        - generated:
+            identity:
+              user_specified_values: BY DEFAULT
+          name: id
+          type: bigint
+
+        - name: group_id
+          nullable: true
+          type: bigint
+          references:
+            name: fk_group_features_on_grou
+            table: groups
+            column: id
+            on_delete: CASCADE
+            on_update: CASCADE
+
+        - name: description
+          type: varchar(64)
+
+      constraints:
+        - columns:
+            - id
+          name: pk_group_features
+          type: primary_key
+
+  - create_table:
+      name: users
+      columns:
+        - name: id
+          type: bigint
+
+        - name: discord_id
+          nullable: true
+          type: bigint
+
+        - name: first_name
+          nullable: true
+          type: varchar(64)
+
+        - name: last_name
+          nullable: true
+          type: varchar(64)
+
+        - name: avatar_url
+          nullable: true
+          type: varchar(255)
+
+        - name: role
+          nullable: true
+          type: varchar(64)
+
+      constraints:
+        - columns:
+            - id
+          name: pk_users
+          type: primary_key
+
+  - create_table:
+      name: group_users
+      columns:
+        - generated:
+            identity:
+              user_specified_values: BY DEFAULT
+          name: id
+          type: bigint
+
+        - name: user_id
+          type: bigint
+          references:
+            name: fk_group_users_on_user
+            table: users
+            column: id
+            on_delete: CASCADE
+            on_update: CASCADE
+
+        - name: group_id
+          type: bigint
+          references:
+            name: fk_group_users_on_group
+            table: groups
+            column: id
+            on_delete: CASCADE
+            on_update: CASCADE
+
+      constraints:
+        - columns:
+            - id
+          name: pk_group_users
+          type: primary_key
