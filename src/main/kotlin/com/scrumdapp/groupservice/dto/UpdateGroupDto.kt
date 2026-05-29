@@ -11,6 +11,6 @@ data class UpdateGroupDto(
         message = "Only a-z, A-Z, 0-9, # ! ? allowed"
     )
     val name: String?,
-    val backgroundPreference: Int?,
-    val isActive: Boolean?
+    val background_preference: Int?,
+    val is_active: Boolean?
 )
