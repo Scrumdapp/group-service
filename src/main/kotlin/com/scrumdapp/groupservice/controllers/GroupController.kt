@@ -21,12 +21,6 @@ import java.net.URI
 class GroupController(
     private val groupService: GroupService
 ) {
-
-    private fun getCurrentUserId(): Int = 1
-
-    private fun getCurrentUserRole(): String = "docent"
-
-
     @GetMapping
     fun getAll(
         @Passport passport: PassportContent
@@ -58,8 +52,7 @@ class GroupController(
         @Valid @RequestBody dto: CreateGroupDto,
         @Passport passport: PassportContent
     ): ResponseEntity<GroupResponseDto> {
-        val created = groupService.create(dto, getCurrentUserRole(), passport.userId.toLong())
-
+        val created = groupService.create(dto, passport.roles?.firstOrNull() ?: "", passport.userId.toLong())
         return ResponseEntity
             .created(URI.create("/groups/${created.id}"))
             .body(created)
