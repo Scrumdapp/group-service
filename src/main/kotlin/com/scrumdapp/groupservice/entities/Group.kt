@@ -18,10 +18,10 @@ class Group {
     var id: Long = 0
 
     @Column(nullable = false, length = 64)
-    var name: String? = null
+    var name: String = ""
 
     @Column(nullable = false)
-    var group_owner: Int = 0
+    var group_owner: Long = 0
 
     @Column(nullable = true)
     var background_preference: Int? = null

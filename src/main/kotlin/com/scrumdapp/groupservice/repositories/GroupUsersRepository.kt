@@ -2,12 +2,14 @@ package com.scrumdapp.groupservice.repositories
 
 import com.scrumdapp.groupservice.entities.GroupUsers
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 
-interface GroupUsersRepository : JpaRepository<GroupUsers, Int> {
+@Repository
+interface GroupUsersRepository : JpaRepository<GroupUsers, Long> {
 
-    fun findByUser(userId: Int): List<GroupUsers>
+    fun findDistinctByUserAndGroupId(userId: Long, groupId: Long): List<GroupUsers>
 
-    fun findByUserId(userId: Int): List<GroupUsers>
+    fun findByUser(userId: Long): List<GroupUsers>
 
-    fun findByGroupId(groupId: Int): List<GroupUsers>
+    fun findByGroupId(groupId: Long): List<GroupUsers>
 }

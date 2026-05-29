@@ -2,6 +2,7 @@ package com.scrumdapp.groupservice.services
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.GroupUsers
@@ -12,46 +13,61 @@ import com.scrumdapp.groupservice.exceptions.NotFoundException
 import com.scrumdapp.groupservice.exceptions.ForbiddenException
 import org.springframework.stereotype.Service
 import com.scrumdapp.groupservice.repositories.GroupFeatureRepository
-import com.scrumdapp.groupservice.repositories.UserRepository
-import com.scrumdapp.groupservice.mappers.toPartialUserDto
+import com.scrumdapp.passportplugin.jwt.PassportContent
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.jwt.Jwt
 
 @Service
 class GroupService(
     private val groupRepository: GroupRepository,
     private val groupUsersRepository: GroupUsersRepository,
     private val groupFeatureRepository: GroupFeatureRepository,
-    private val userRepository: UserRepository,
+    private val userRequestService: UserRequestService,
 ) {
 
-    fun getAll(userId: Int): List<GroupResponseDto> {
-        return groupUsersRepository.findByUserId(userId)
-            .mapNotNull { it.group }
+    fun getAll(userId: Long): List<GroupResponseDto> {
+        return groupUsersRepository.findByUser(userId)
+            .map { it.group }
             .map(GroupMapper::toResponseDto)
     }
 
-    fun getUsersByGroupId(groupId: Int): List<PartialUserDto> =
-        groupUsersRepository.findByGroupId(groupId).map { it.toPartialUserDto() }
+    fun getAllPartial(userId: Long): List<PartialGroupResponseDto> {
+        return groupUsersRepository.findByUser(userId)
+            .map { it.group }
+            .map { GroupMapper.toPartialDto(it) }
+    }
 
-    fun getById(id: Int): GroupResponseDto {
-        val group = groupRepository.findById(id)
-            .orElseThrow { NotFoundException("Group with id $id not found") }
-        val features = groupFeatureRepository.findByGroupId(id)
+    fun getPartialUsers(groupId: Long, userId: Long): List<PartialUserDto> {
+        val groupUsers = groupUsersRepository.findByGroupId(groupId)
+        if (groupUsers.isEmpty() || groupUsers.find { it.user == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
+
+        val groupUser = fetchUsernames(groupUsers.map { it.user })
+        return groupUser.map { GroupMapper.toGroupUserResponseDto(groupId, it) }
+    }
+
+    fun getById(groupId: Long, userId: Long): GroupResponseDto {
+
+        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId)
+
+        if (groupUser.isEmpty()) throw ForbiddenException("Insufficient permission to access to this group")
+
+        val group = groupUser[0].group ?: throw NotFoundException("Group not found")
+
+        val features = groupFeatureRepository.findByGroupId(group.id)
         return GroupMapper.toResponseDto(group, features)
     }
 
-    fun create(dto: CreateGroupDto, role: String, userId: Int): GroupResponseDto {
+    fun create(dto: CreateGroupDto, role: String, userId: Long): GroupResponseDto {
 
-        var user = userRepository.findUserById(userId) ?: throw NotFoundException("User with id $userId not found")
-
-        if (role != "docent") {
-            throw ForbiddenException("Only teachers (docent) can create groups")
+        if (role != "COACH") {
+            throw ForbiddenException("Only coaches (docent) can create groups")
         }
 
-        val group = GroupMapper.fromCreateDto(dto, user.id)
+        val group = GroupMapper.fromCreateDto(dto, userId)
         val saved = groupRepository.save(group)
 
         val groupUser = GroupUsers().apply {
-            this.user = user
+            this.user = userId
             this.group = saved
         }
         groupUsersRepository.save(groupUser)
@@ -59,9 +75,9 @@ class GroupService(
         return GroupMapper.toResponseDto(saved)
     }
 
-    fun update(id: Int, dto: UpdateGroupDto, currentUserId: Int): GroupResponseDto {
-        val existing = groupRepository.findById(id)
-            .orElseThrow { NotFoundException("Group with id $id not found") }
+    fun update(groupId: Long, dto: UpdateGroupDto, currentUserId: Long): GroupResponseDto {
+        val existing = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
         if (existing.group_owner != currentUserId) {
             throw ForbiddenException("You are not the owner of this group")
@@ -73,33 +89,42 @@ class GroupService(
         return GroupMapper.toResponseDto(saved)
     }
 
-    fun addUser(groupId: Int, userId: Int) {
+    fun addUser(groupId: Long, userId: Long): PartialUserDto {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
-        val user = userRepository.findUserById(userId)
-            ?: throw NotFoundException("User with id $userId not found")
-
         val groupUser = GroupUsers().apply {
-            this.user = user
+            this.user = userId
             this.group = group
         }
-        groupUsersRepository.save(groupUser)
+
+        val newGroupUser = groupUsersRepository.save(groupUser)
+
+        val userName = fetchUsernames(listOf(userId)).first()
+        return GroupMapper.toGroupUserResponseDto(newGroupUser.group.id, userName)
     }
 
-    fun delete(id: Int, role: String, currentUserId: Int) {
-        val existing = groupRepository.findById(id)
-            .orElseThrow { NotFoundException("Group with id $id not found") }
+    fun deactivate(groupId: Long, passport: PassportContent): Boolean {
+        val existing = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
-        if (role != "docent") {
+        if (passport.roles == null || passport.roles?.contains("COACH") == false) {
             throw ForbiddenException("Only teachers (docent) can delete groups")
         }
 
-        if (existing.group_owner != currentUserId) {
+        if (existing.group_owner != passport.userId.toLong()) {
             throw ForbiddenException("You are not the owner of this group")
         }
 
         existing.is_active = false
         groupRepository.save(existing)
+
+        return true
+    }
+
+    private fun fetchUsernames(ids: List<Long>): List<PartialUser> {
+        val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
+            ?: throw IllegalStateException("Auth principal couldn't be found or isn't a valid jwt. To prevent the endpoint is protected.")
+        return userRequestService.fetchUsers(jwt, ids)
     }
 }

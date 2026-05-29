@@ -13,7 +13,8 @@ class GroupFeatureService(
 ) {
 
     fun create(dto: GroupFeatureDto): GroupFeatureDto {
-        val group = groupRepository.findById(dto.key!!.toInt())
+        // @Steven ??????
+        val group = groupRepository.findById(dto.key)
             .orElseThrow { NotFoundException("Group with id ${dto.key} not found") }
 
         val entity = GroupFeatureMapper.toEntity(dto, group)
