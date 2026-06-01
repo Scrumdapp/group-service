@@ -48,13 +48,12 @@ class GroupController(
 
 
     @PostMapping
-    @PreAuthorize("hasRole('COACH')")
     fun create(
         @Valid @RequestBody dto: CreateGroupDto,
         @Passport passport: PassportContent
-    ): ResponseEntity<GroupResponseDto> {
+    ): GroupResponseDto {
         val created = groupService.create(dto, passport.userId.toLong())
-        return ResponseEntity.created(URI.create("/groups/${created.id}")).body(created)
+        return created
     }
 
     @PatchMapping("/{groupId}")

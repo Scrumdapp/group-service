@@ -1,5 +1,6 @@
 package com.scrumdapp.groupservice.configs
 
+import com.scrumdapp.groupservice.exceptions.SecurityExceptionHandler
 import com.scrumdapp.passportplugin.filters.PassportAuthFilter
 import com.scrumdapp.passportplugin.filters.usePassport
 import org.springframework.context.annotation.Bean
@@ -14,7 +15,8 @@ import org.springframework.http.MediaType
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val passportAuthFilter: PassportAuthFilter
+    private val passportAuthFilter: PassportAuthFilter,
+    private val securityExceptionHandler: SecurityExceptionHandler
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -31,20 +33,10 @@ class SecurityConfig(
             }
             .exceptionHandling {
                 it.authenticationEntryPoint { _, response, _ ->
-                    response.status = 401
-                    response.contentType = MediaType.APPLICATION_JSON_VALUE
-                    ObjectMapper().writeValue(
-                        response.outputStream,
-                        mapOf("code" to 401, "message" to "Unauthorised")
-                    )
+                    securityExceptionHandler.write(response, 401, "Unauthorised")
                 }
                 it.accessDeniedHandler { _, response, _ ->
-                    response.status = 403
-                    response.contentType = MediaType.APPLICATION_JSON_VALUE
-                    ObjectMapper().writeValue(
-                        response.outputStream,
-                        mapOf("code" to 403, "message" to "Access denied")
-                    )
+                    securityExceptionHandler.write(response, 403, "Access denied")
                 }
             }
         return http.build()
