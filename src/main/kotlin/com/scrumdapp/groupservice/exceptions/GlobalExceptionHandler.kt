@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.bind.MethodArgumentNotValidException
 
 @RestControllerAdvice
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -17,7 +18,7 @@ class GlobalExceptionHandler {
             .body(
                 ApiResponse(
                     code = ex.status.value(),
-                    message = ex.message ?: "Unknown error"
+                    message = ex.message ?: "Unauthorised"
                 )
             )
     }
@@ -32,5 +33,15 @@ class GlobalExceptionHandler {
                     message = "Something went wrong"
                 )
             )
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ApiResponse> {
+        val message = ex.bindingResult.fieldErrors
+            .firstOrNull()?.defaultMessage ?: "Validation failed"
+
+        return ResponseEntity
+            .status(400)
+            .body(ApiResponse(code = 400, message = message))
     }
 }

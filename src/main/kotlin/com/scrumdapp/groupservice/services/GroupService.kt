@@ -57,12 +57,7 @@ class GroupService(
         return GroupMapper.toResponseDto(group, features)
     }
 
-    fun create(dto: CreateGroupDto, role: String, userId: Long): GroupResponseDto {
-
-        if (role != "COACH") {
-            throw ForbiddenException("Only coaches (docent) can create groups")
-        }
-
+    fun create(dto: CreateGroupDto, userId: Long): GroupResponseDto {
         val group = GroupMapper.fromCreateDto(dto, userId)
         val saved = groupRepository.save(group)
 
