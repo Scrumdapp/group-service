@@ -57,13 +57,7 @@ class GroupService(
         return GroupMapper.toResponseDto(group, features)
     }
 
-    fun create(dto: CreateGroupDto, role: String, userId: Long): GroupResponseDto {
-
-
-        if (role != "COACH") {
-            throw ForbiddenException("Only coaches (docent) can create groups")
-        }
-
+    fun create(dto: CreateGroupDto, userId: Long): GroupResponseDto {
         val group = GroupMapper.fromCreateDto(dto, userId)
         val saved = groupRepository.save(group)
 
@@ -108,10 +102,6 @@ class GroupService(
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {
         val existing = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
-
-        if (passport.roles == null || passport.roles?.contains("COACH") == false) {
-            throw ForbiddenException("Only teachers (docent) can delete groups")
-        }
 
         if (existing.group_owner != passport.userId.toLong()) {
             throw ForbiddenException("You are not the owner of this group")

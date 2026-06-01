@@ -11,6 +11,7 @@ import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
@@ -21,19 +22,12 @@ import java.net.URI
 class GroupController(
     private val groupService: GroupService
 ) {
-
-    private fun getCurrentUserId(): Int = 1
-
-    private fun getCurrentUserRole(): String = "docent"
-
-
     @GetMapping
     fun getAll(
         @Passport passport: PassportContent
     ): List<PartialGroupResponseDto> {
         return groupService.getAllPartial(passport.userId.toLong())
     }
-
 
     @GetMapping("/{id}")
     fun getById(
@@ -57,12 +51,9 @@ class GroupController(
     fun create(
         @Valid @RequestBody dto: CreateGroupDto,
         @Passport passport: PassportContent
-    ): ResponseEntity<GroupResponseDto> {
-        val created = groupService.create(dto, getCurrentUserRole(), passport.userId.toLong())
-
-        return ResponseEntity
-            .created(URI.create("/groups/${created.id}"))
-            .body(created)
+    ): GroupResponseDto {
+        val created = groupService.create(dto, passport.userId.toLong())
+        return created
     }
 
     @PatchMapping("/{groupId}")
