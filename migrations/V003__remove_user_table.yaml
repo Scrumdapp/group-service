@@ -1,0 +1,10 @@
+operations:
+  - drop_constraint:
+      table: group_users
+      name: fk_group_users_on_user
+
+  - drop_table:
+      name: users
+
+
+
