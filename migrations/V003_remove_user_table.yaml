@@ -1,0 +1,12 @@
+operations:
+  - drop_multicolumn_constraint:
+      table: group_users
+      name: fk_group_users_on_user
+      up:
+        user_id: user_id
+      down:
+        user_id: user_id
+
+
+  - drop_table:
+      name: users
