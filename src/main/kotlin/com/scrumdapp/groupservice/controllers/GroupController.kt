@@ -6,16 +6,13 @@ import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
+import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.services.GroupService
 import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 
 @RestController
 @RequestMapping("/groups")
@@ -68,9 +65,12 @@ class GroupController(
     @PostMapping("/{groupId}/users")
     fun addUser(
         @PathVariable groupId: Long,
+        @RequestParam(required = false) token: String?,
         @RequestBody dto: AddUserDto
-    ): PartialUserDto {
-        return groupService.addUser(groupId, dto.user_id)
+    ): GroupResponseDto {
+        if (token == null) throw BadRequestException("Verification token must be provided")
+
+        return groupService.addUser(groupId, dto.user_id, token)
     }
 
     @GetMapping("/{groupId}/users")

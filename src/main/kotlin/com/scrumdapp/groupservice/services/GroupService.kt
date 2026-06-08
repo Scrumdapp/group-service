@@ -6,6 +6,7 @@ import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.GroupUsers
+import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.mappers.GroupMapper
 import com.scrumdapp.groupservice.repositories.GroupRepository
 import com.scrumdapp.groupservice.repositories.GroupUsersRepository
@@ -23,6 +24,7 @@ class GroupService(
     private val groupUsersRepository: GroupUsersRepository,
     private val groupFeatureRepository: GroupFeatureRepository,
     private val userRequestService: UserRequestService,
+    private val inviteRequestService: InviteRequestService,
 ) {
 
     fun getAll(userId: Long): List<GroupResponseDto> {
@@ -84,19 +86,19 @@ class GroupService(
         return GroupMapper.toResponseDto(saved)
     }
 
-    fun addUser(groupId: Long, userId: Long): PartialUserDto {
+    fun addUser(groupId: Long, userId: Long, safetyCode: String): GroupResponseDto {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
+
+        if (!validateInviteSafetyToken(safetyCode)) throw BadRequestException("Provided token is invalid")
 
         val groupUser = GroupUsers().apply {
             this.user = userId
             this.group = group
         }
 
-        val newGroupUser = groupUsersRepository.save(groupUser)
-
-        val userName = fetchUsernames(listOf(userId)).first()
-        return GroupMapper.toGroupUserResponseDto(newGroupUser.group.id, userName)
+        groupUsersRepository.save(groupUser)
+        return GroupMapper.toResponseDto(group)
     }
 
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {
@@ -113,9 +115,15 @@ class GroupService(
         return true
     }
 
+    private fun validateInviteSafetyToken(safetyCode: String): Boolean {
+        val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
+            ?: throw IllegalStateException("Auth principal couldn't be found or isn't a valid jwt.")
+        return inviteRequestService.validateInviteSafetyToken(jwt, safetyCode).valid
+    }
+
     private fun fetchUsernames(ids: List<Long>): List<PartialUser> {
         val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
-            ?: throw IllegalStateException("Auth principal couldn't be found or isn't a valid jwt. To prevent the endpoint is protected.")
+            ?: throw IllegalStateException("Auth principal couldn't be found or isn't a valid jwt.")
         return userRequestService.fetchUsers(jwt, ids)
     }
 }

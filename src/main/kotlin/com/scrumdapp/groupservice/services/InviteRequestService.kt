@@ -1,6 +1,5 @@
 package com.scrumdapp.groupservice.services
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.exceptions.ServerException
 import org.springframework.beans.factory.annotation.Value
@@ -11,29 +10,28 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient.builder
 import org.springframework.web.client.toEntity
-import tools.jackson.core.type.TypeReference
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.core.type.TypeReference
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class PartialUser(
-    val id: Long,
-    val name: String
+data class InviteValidationResponse(
+    val valid: Boolean
 )
 
 @Service
-class UserRequestService(
-    @Value($$"${USER_SERVICE_URL}") private val baseUrl: String,
-    @Value($$"${USER_FETCH_ENDPOINT}") private val fetchEndpoint: String = "/users",
-    @Value($$"${spring.application.name}") private val appName: String
+class InviteRequestService(
+    @Value($$"${INVITE_SERVICE_URL}") private val baseUrl: String,
+    @Value($$"${INVITE_VALIDATION_URL:/invites/safety}") private val inviteValidationUrl: String,
+    @Value($$"${spring.application.name}") private val appName: String,
 ) {
 
     private val reqBuilder = builder().baseUrl(baseUrl).build()
 
     private val mapper = ObjectMapper()
 
-    fun fetchUsers(jwt: Jwt, ids: List<Long>): List<PartialUser> {
 
-        val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
+
+    fun validateInviteSafetyToken(jwt: Jwt, token: String): InviteValidationResponse {
+        val uri = "$inviteValidationUrl?token=$token"
 
         try {
             val res = reqBuilder.get()
@@ -45,13 +43,13 @@ class UserRequestService(
                 .toEntity<String>()
 
             if (res.statusCode != HttpStatus.OK) {
-                throw Exception("Unexpected response from user request")
+                throw Exception("Unexpected response from InviteRequestService")
             } else {
-                val body = res.body ?: throw Exception("Unexpected response from user request")
-                return mapper.readValue(body, object : TypeReference<List<PartialUser>>() {})
+                val body = mapper.readValue(res.body, InviteValidationResponse::class.java)
+                return body
             }
         } catch (e: Exception) {
-            // Far from the cleanest way of doing this, but I cannot be bothered to also rewrite the error handling at this moment
+            println(e)
             throw BadRequestException("Couldn't reach downstream service")
         }
     }
