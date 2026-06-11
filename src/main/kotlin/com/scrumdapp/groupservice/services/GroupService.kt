@@ -92,12 +92,17 @@ class GroupService(
 
         if (!validateInviteSafetyToken(safetyCode)) throw BadRequestException("Provided token is invalid")
 
-        val groupUser = GroupUsers().apply {
-            this.user = userId
-            this.group = group
-        }
+        val groupUsers = groupUsersRepository.findByGroupId(group.id)
 
-        groupUsersRepository.save(groupUser)
+        if (groupUsers.none { it.user == userId }) {
+            val groupUser = GroupUsers().apply {
+                this.user = userId
+                this.group = group
+            }
+
+            groupUsersRepository.save(groupUser)
+        }
+        
         return GroupMapper.toResponseDto(group)
     }
 
