@@ -92,14 +92,13 @@ class GroupService(
 
         if (!validateInviteSafetyToken(safetyCode)) throw BadRequestException("Provided token is invalid")
 
-        val groupUsers = groupUsersRepository.findByGroupId(group.id)
+        val exists = groupUsersRepository.existsByGroupIdAndUser(groupId, userId)
 
-        if (groupUsers.none { it.user == userId }) {
+        if (!exists) {
             val groupUser = GroupUsers().apply {
                 this.user = userId
                 this.group = group
             }
-
             groupUsersRepository.save(groupUser)
         }
         
