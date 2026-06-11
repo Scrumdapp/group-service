@@ -66,9 +66,11 @@ class GroupController(
     fun addUser(
         @PathVariable groupId: Long,
         @RequestParam(required = false) token: String?,
-        @RequestBody dto: AddUserDto
+        @RequestBody dto: AddUserDto,
+        @Passport passport: PassportContent
     ): GroupResponseDto {
         if (token == null) throw BadRequestException("Verification token must be provided")
+        if (passport.userId.toLong() != dto.user_id) throw BadRequestException("You cannot an user other then yourself")
 
         return groupService.addUser(groupId, dto.user_id, token)
     }
