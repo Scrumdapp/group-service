@@ -1,6 +1,5 @@
 package com.scrumdapp.groupservice.controllers
 
-import com.scrumdapp.groupservice.dto.AddUserDto
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
@@ -66,11 +65,11 @@ class GroupController(
     fun addUser(
         @PathVariable groupId: Long,
         @RequestParam(required = false) token: String?,
-        @RequestBody dto: AddUserDto
+        @Passport passport: PassportContent
     ): GroupResponseDto {
         if (token == null) throw BadRequestException("Verification token must be provided")
 
-        return groupService.addUser(groupId, dto.user_id, token)
+        return groupService.addUser(groupId, passport.userId.toLong(), token)
     }
 
     @GetMapping("/{groupId}/users")
