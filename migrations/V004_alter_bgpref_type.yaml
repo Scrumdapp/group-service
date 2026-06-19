@@ -1,0 +1,11 @@
+operations:
+  - alter_column:
+      table: groups
+      column: background_preference
+      type: varchar(32)
+      up: CAST(background_preference AS varchar)
+      down: CASE
+              WHEN background_preference ~ '^[0-9]+$'
+              THEN CAST(background_preference AS integer)
+              ELSE NULL
+            END
