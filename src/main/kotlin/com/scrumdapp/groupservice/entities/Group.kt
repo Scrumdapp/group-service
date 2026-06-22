@@ -23,8 +23,8 @@ class Group {
     @Column(nullable = false)
     var group_owner: Long = 0
 
-    @Column(nullable = true)
-    var background_preference: Int? = null
+    @Column(nullable = true, length = 32)
+    var background_preference: String? = null
 
     @Column(nullable = false)
     var is_active: Boolean = false

@@ -27,9 +27,9 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/groups").hasAnyAuthority("STUDENT", "COACH")
                 it.requestMatchers(HttpMethod.GET, "/groups/user/*").hasAuthority("GATEWAY")
                 it.requestMatchers(HttpMethod.GET, "/groups/**").hasAnyAuthority("STUDENT", "COACH", "GATEWAY")
+                it.requestMatchers("/groups/**").hasAuthority("COACH")
                 it.requestMatchers(HttpMethod.POST, "/groups/{groupId}/users").hasAnyAuthority("STUDENT","COACH")
-                it.requestMatchers(HttpMethod.PATCH, "/groups/**").hasAuthority("COACH")
-                it.requestMatchers(HttpMethod.DELETE, "/groups/**").hasAuthority("COACH")
+
             }
             .exceptionHandling {
                 it.authenticationEntryPoint { _, response, _ ->

@@ -25,7 +25,7 @@ object GroupMapper {
         PartialGroupResponseDto(
             id = group.id,
             name = group.name,
-            background_preference = group.background_preference ?: 0
+            background_preference = group.background_preference
         )
 
     fun fromCreateDto(dto: CreateGroupDto, ownerId: Long): Group =
