@@ -28,6 +28,7 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/groups/user/*").hasAuthority("GATEWAY")
                 it.requestMatchers(HttpMethod.GET, "/groups/**").hasAnyAuthority("STUDENT", "COACH", "GATEWAY")
                 it.requestMatchers(HttpMethod.POST, "/groups/{groupId}/users").hasAnyAuthority("STUDENT","COACH")
+                it.requestMatchers(HttpMethod.PATCH, "/groups/{groupId}").hasAnyAuthority("STUDENT", "COACH")
                 it.requestMatchers("/groups/**").hasAuthority("COACH")
             }
             .exceptionHandling {

@@ -6,6 +6,8 @@ import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.exceptions.BadRequestException
+import com.scrumdapp.groupservice.exceptions.ForbiddenException
+import com.scrumdapp.groupservice.exceptions.ServerException
 import com.scrumdapp.groupservice.services.GroupService
 import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
@@ -58,6 +60,9 @@ class GroupController(
         @Valid @RequestBody dto: UpdateGroupDto,
         @Passport passport: PassportContent
     ): GroupResponseDto {
+        val roles = passport.roles ?: throw ServerException("No roles found")
+        if (dto.name != null && !roles.contains("COACH")) throw ForbiddenException("You cannot change the groups name")
+        if (dto.is_active != null && !roles.contains("COACH")) throw ForbiddenException("You cannot change the groups active state")
         return groupService.update(groupId, dto, passport.userId.toLong())
     }
 
