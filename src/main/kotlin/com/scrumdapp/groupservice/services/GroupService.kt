@@ -4,6 +4,7 @@ import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
+import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.GroupUsers
 import com.scrumdapp.groupservice.exceptions.BadRequestException
@@ -15,8 +16,11 @@ import com.scrumdapp.groupservice.exceptions.ForbiddenException
 import org.springframework.stereotype.Service
 import com.scrumdapp.groupservice.repositories.GroupFeatureRepository
 import com.scrumdapp.passportplugin.jwt.PassportContent
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.client.RestClient
 
 @Service
 class GroupService(
@@ -81,6 +85,36 @@ class GroupService(
         }
 
         val updated = GroupMapper.updateFromDto(existing, dto)
+        val saved = groupRepository.save(updated)
+
+        return GroupMapper.toResponseDto(saved)
+    }
+
+    @Value($$"${picture-background-endpoint}")
+    lateinit var backgroundUri: String
+    fun updateBackground(groupId: Long, dto: UpdateBackgroundGroupDto, currentUserId: Long): GroupResponseDto {
+        groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+
+        val userInGroup = groupUsersRepository.findDistinctByUserAndGroupId(currentUserId, groupId)
+
+        if(userInGroup.isEmpty()) {
+            throw ForbiddenException("You are not inside that group")
+        }
+
+        val client = RestClient.create()
+
+        val isValid = client
+            .get()
+            .uri(backgroundUri + dto.background_preference)
+            .exchange { _, response -> response.headers.contentType == MediaType.parseMediaType("image/webp")}
+        if(!isValid) {
+            throw NotFoundException("Background does not exist")
+        }
+
+        val group = userInGroup[0].group
+
+        val updated = GroupMapper.updateBackgroundFromDto(group, dto)
         val saved = groupRepository.save(updated)
 
         return GroupMapper.toResponseDto(saved)
