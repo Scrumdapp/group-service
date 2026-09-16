@@ -106,8 +106,8 @@ class GroupService(
 
         val isValid = client
             .get()
-            .uri(backgroundUri + dto.background_preference)
-            .exchange { _, response -> response.headers.contentType == MediaType.parseMediaType("image/webp")}
+            .uri(backgroundUri + dto.background_preference + ".webp")
+            .exchange { _, response -> response.headers.contentType == MediaType("image", "webp")}
         if(!isValid) {
             throw NotFoundException("Background does not exist")
         }
