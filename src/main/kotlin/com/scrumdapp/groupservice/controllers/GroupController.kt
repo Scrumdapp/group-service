@@ -2,6 +2,7 @@ package com.scrumdapp.groupservice.controllers
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.GroupUserDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
@@ -87,5 +88,14 @@ class GroupController(
     ): ResponseEntity<Void> {
         groupService.deactivate(groupId, passport)
         return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/{groupId}/users")
+    fun deleteUser(
+        @PathVariable groupId: Long,
+        @Valid @RequestBody dto: GroupUserDto,
+        @Passport passport: PassportContent
+    ): Boolean {
+        return groupService.deleteUser(groupId, dto, passport.userId.toLong())
     }
 }

@@ -2,6 +2,7 @@ package com.scrumdapp.groupservice.services
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
+import com.scrumdapp.groupservice.dto.GroupUserDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
@@ -103,6 +104,25 @@ class GroupService(
         }
         
         return GroupMapper.toResponseDto(group)
+    }
+
+    fun deleteUser(groupId: Long, dto: GroupUserDto, currentUserId: Long): Boolean {
+        val existing = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+
+        if (existing.group_owner != currentUserId) {
+            throw ForbiddenException("You are not the owner of this group")
+        }
+        val exists = groupUsersRepository.existsByGroupIdAndUser(groupId, dto.userId)
+
+        if (exists) {
+            val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(dto.userId, groupId)[0]
+            groupUsersRepository.delete(groupUser)
+        } else {
+            throw NotFoundException("User with id ${dto.userId} not found")
+        }
+
+        return true
     }
 
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {
