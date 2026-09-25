@@ -5,6 +5,7 @@ import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
+import com.scrumdapp.groupservice.dto.UpdateGroupUserDto
 import com.scrumdapp.groupservice.entities.GroupUsers
 import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.mappers.GroupMapper
@@ -103,6 +104,17 @@ class GroupService(
         }
         
         return GroupMapper.toResponseDto(group)
+    }
+
+    fun updateUser(groupId: Long, userId: Long, updateUserBody: UpdateGroupUserDto) {
+        val groupUser = groupUsersRepository.findByGroupIdAndUser(groupId, userId)
+            .orElseThrow { NotFoundException("The user was not found") }
+
+        if  (updateUserBody.is_ghost != null) {
+            groupUser.isGhost = updateUserBody.is_ghost
+        }
+
+        groupUsersRepository.save(groupUser)
     }
 
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {

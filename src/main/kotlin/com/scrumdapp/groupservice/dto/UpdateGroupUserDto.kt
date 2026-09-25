@@ -1,4 +1,5 @@
 package com.scrumdapp.groupservice.dto
 
-class UpdateGroupUserDto {
-}
+data class UpdateGroupUserDto(
+    val is_ghost: Boolean? = null
+)
