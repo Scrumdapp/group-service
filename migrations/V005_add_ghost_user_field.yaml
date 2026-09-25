@@ -1,0 +1,8 @@
+operations:
+  - add_column:
+      table: group_users
+      up: "false"
+      column:
+        name: is_ghost
+        type: boolean
+        nullable: false
