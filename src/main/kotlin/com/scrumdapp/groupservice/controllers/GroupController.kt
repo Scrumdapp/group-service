@@ -5,6 +5,7 @@ import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.GroupUserDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
+import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.services.GroupService
@@ -60,6 +61,15 @@ class GroupController(
         @Passport passport: PassportContent
     ): GroupResponseDto {
         return groupService.update(groupId, dto, passport.userId.toLong())
+    }
+
+    @PatchMapping("/{groupId}/background")
+    fun updateBackground(
+        @PathVariable groupId: Long,
+        @Valid @RequestBody dto: UpdateBackgroundGroupDto,
+        @Passport passport: PassportContent
+    ): GroupResponseDto {
+        return groupService.updateBackground(groupId, dto, passport.userId.toLong())
     }
 
     @PostMapping("/{groupId}/users")
