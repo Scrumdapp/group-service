@@ -106,6 +106,7 @@ class GroupController(
         @Valid @RequestBody dto: GroupUserDto,
         @Passport passport: PassportContent
     ): Boolean {
-        return groupService.deleteUser(groupId, dto, passport.userId.toLong())
+        val groupDto = GroupUserDto(dto.userId, groupId)
+        return groupService.deleteUser(groupId, groupDto, passport.userId.toLong())
     }
 }
