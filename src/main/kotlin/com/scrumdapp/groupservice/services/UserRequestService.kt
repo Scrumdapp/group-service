@@ -17,7 +17,8 @@ import tools.jackson.databind.ObjectMapper
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PartialUser(
     val id: Long,
-    val name: String
+    val name: String,
+    val isGhost: Boolean
 )
 
 @Service
@@ -36,6 +37,7 @@ class UserRequestService(
         val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
 
         try {
+            println(jwt.tokenValue)
             val res = reqBuilder.get()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer ${jwt.tokenValue}")
