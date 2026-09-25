@@ -5,6 +5,7 @@ import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
+import com.scrumdapp.groupservice.dto.UpdateGroupUserDto
 import com.scrumdapp.groupservice.entities.GroupUsers
 import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.mappers.GroupMapper
@@ -44,7 +45,7 @@ class GroupService(
         if (groupUsers.isEmpty() || groupUsers.find { it.user == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
 
         val groupUser = fetchUsernames(groupUsers.map { it.user })
-        return groupUser.map { GroupMapper.toGroupUserResponseDto(groupId, it) }
+        return groupUser.map { user -> GroupMapper.toGroupUserResponseDto(groupId, user, groupUsers.find { it.id == user.id }!!) }
     }
 
     fun getById(groupId: Long, userId: Long): GroupResponseDto {
@@ -103,6 +104,17 @@ class GroupService(
         }
         
         return GroupMapper.toResponseDto(group)
+    }
+
+    fun updateUser(groupId: Long, userId: Long, updateUserBody: UpdateGroupUserDto) {
+        val groupUser = groupUsersRepository.findByGroupIdAndUser(groupId, userId)
+            .orElseThrow { NotFoundException("The user was not found") }
+
+        if  (updateUserBody.is_ghost != null) {
+            groupUser.isGhost = updateUserBody.is_ghost
+        }
+
+        groupUsersRepository.save(groupUser)
     }
 
     fun deactivate(groupId: Long, passport: PassportContent): Boolean {
