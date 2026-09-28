@@ -5,6 +5,7 @@ import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
+import com.scrumdapp.groupservice.dto.UpdateGroupUserDto
 import com.scrumdapp.groupservice.exceptions.BadRequestException
 import com.scrumdapp.groupservice.exceptions.ForbiddenException
 import com.scrumdapp.groupservice.exceptions.ServerException
@@ -12,6 +13,7 @@ import com.scrumdapp.groupservice.services.GroupService
 import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -84,6 +86,22 @@ class GroupController(
     ): List<PartialUserDto> {
         return groupService.getPartialUsers(groupId, passport.userId.toLong())
     }
+
+    @PatchMapping("/{groupId}/users/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun updateUser(
+        @PathVariable groupId: Long,
+        @PathVariable userId: Long,
+        @RequestBody @Valid updateUserBody: UpdateGroupUserDto,
+        @Passport passport: PassportContent
+    ) {
+        if (passport.userGroups?.none { it == groupId.toInt() } ?: true) {
+            throw ForbiddenException("You can't access this group")
+        }
+
+        groupService.updateUser(groupId, userId, updateUserBody)
+    }
+
 
     @DeleteMapping("/{groupId}")
     fun delete(

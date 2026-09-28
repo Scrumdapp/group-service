@@ -49,7 +49,6 @@ class InviteRequestService(
                 return body
             }
         } catch (e: Exception) {
-            println(e)
             throw BadRequestException("Couldn't reach downstream service")
         }
     }
