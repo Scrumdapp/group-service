@@ -2,10 +2,8 @@ package com.scrumdapp.groupservice.services
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
-import com.scrumdapp.groupservice.dto.GroupUserDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
-import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupUserDto
 import com.scrumdapp.groupservice.entities.GroupUsers
@@ -15,14 +13,13 @@ import com.scrumdapp.groupservice.repositories.GroupRepository
 import com.scrumdapp.groupservice.repositories.GroupUsersRepository
 import com.scrumdapp.groupservice.exceptions.NotFoundException
 import com.scrumdapp.groupservice.exceptions.ForbiddenException
+import com.scrumdapp.groupservice.exceptions.ServerException
 import org.springframework.stereotype.Service
 import com.scrumdapp.groupservice.repositories.GroupFeatureRepository
 import com.scrumdapp.passportplugin.jwt.PassportContent
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.web.client.RestClient
+import org.springframework.web.client.HttpServerErrorException
 
 @Service
 class GroupService(
@@ -146,7 +143,7 @@ class GroupService(
 
         if (groupUser != null) {
             if(userId == currentUserId) {
-                throw BadRequestException("You cannot remove yourself")
+                throw BadRequestException("You cannot delete yourself")
             }
             groupUsersRepository.delete(groupUser)
         } else {
