@@ -13,13 +13,11 @@ import com.scrumdapp.groupservice.repositories.GroupRepository
 import com.scrumdapp.groupservice.repositories.GroupUsersRepository
 import com.scrumdapp.groupservice.exceptions.NotFoundException
 import com.scrumdapp.groupservice.exceptions.ForbiddenException
-import com.scrumdapp.groupservice.exceptions.ServerException
 import org.springframework.stereotype.Service
 import com.scrumdapp.groupservice.repositories.GroupFeatureRepository
 import com.scrumdapp.passportplugin.jwt.PassportContent
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.web.client.HttpServerErrorException
 
 @Service
 class GroupService(
@@ -79,41 +77,22 @@ class GroupService(
         val existing = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
+        dto.background_preference?.let {
+            if (!GroupBackgroundService.exists(it)) {
+                throw NotFoundException("Background not found")
+            }
+
+            existing.background_preference = it
+
+            val saved = groupRepository.save(existing)
+            return GroupMapper.toResponseDto(saved)
+        }
+
         if (existing.group_owner != currentUserId) {
             throw ForbiddenException("You are not the owner of this group")
         }
 
         val updated = GroupMapper.updateFromDto(existing, dto)
-        val saved = groupRepository.save(updated)
-
-        return GroupMapper.toResponseDto(saved)
-    }
-
-    @Value($$"${picture-background-endpoint}")
-    lateinit var backgroundUri: String
-    fun updateBackground(groupId: Long, dto: UpdateBackgroundGroupDto, currentUserId: Long): GroupResponseDto {
-        groupRepository.findById(groupId)
-            .orElseThrow { NotFoundException("Group with id $groupId not found") }
-
-        val userInGroup = groupUsersRepository.findDistinctByUserAndGroupId(currentUserId, groupId)
-
-        if(userInGroup.isEmpty()) {
-            throw ForbiddenException("You are not inside that group")
-        }
-
-        val client = RestClient.create()
-
-        val isValid = client
-            .get()
-            .uri(backgroundUri + dto.background_preference + ".webp")
-            .exchange { _, response -> response.headers.contentType == MediaType("image", "webp")}
-        if(!isValid) {
-            throw NotFoundException("Background does not exist")
-        }
-
-        val group = userInGroup[0].group
-
-        val updated = GroupMapper.updateBackgroundFromDto(group, dto)
         val saved = groupRepository.save(updated)
 
         return GroupMapper.toResponseDto(saved)
@@ -139,16 +118,21 @@ class GroupService(
     }
 
     fun deleteUser(groupId: Long, userId: Long, currentUserId: Long): Boolean {
-        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId).firstOrNull()
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
-        if (groupUser != null) {
-            if(userId == currentUserId) {
-                throw BadRequestException("You cannot delete yourself")
-            }
-            groupUsersRepository.delete(groupUser)
-        } else {
-            throw NotFoundException("User with id $userId not found")
+        if(group.group_owner != currentUserId) {
+            throw ForbiddenException("You are not the owner of this group")
         }
+
+        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId).firstOrNull() ?: throw NotFoundException(
+                "User with id $userId not found"
+            )
+
+        if(userId == currentUserId) {
+            throw BadRequestException("You cannot delete yourself")
+        }
+        groupUsersRepository.delete(groupUser)
 
         return true
     }
