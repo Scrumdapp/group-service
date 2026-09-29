@@ -46,11 +46,11 @@ object GroupMapper {
     fun toGroupUserResponseDto(groupId: Long, user: PartialUser, groupUser: GroupUsers): PartialUserDto {
         val fullName = user.name.split(" ")
         return PartialUserDto(
-            group_id = groupId,
-            user_id = user.id,
-            first_name = fullName[0],
-            last_name = fullName.drop(1).joinToString(" "),
-            is_ghost = groupUser.isGhost
+            groupId = groupId,
+            userId = user.id,
+            firstName = fullName[0],
+            lastName = fullName.drop(1).joinToString(" "),
+            isGhost = groupUser.isGhost
         )
     }
 }
