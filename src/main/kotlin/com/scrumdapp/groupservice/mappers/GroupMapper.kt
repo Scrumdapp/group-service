@@ -50,7 +50,7 @@ object GroupMapper {
             userId = user.id,
             firstName = fullName[0],
             lastName = fullName.drop(1).joinToString(" "),
-            ghost = groupUser.isGhost
+            isGhost = groupUser.isGhost
         )
     }
 }
