@@ -2,10 +2,8 @@ package com.scrumdapp.groupservice.controllers
 
 import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
-import com.scrumdapp.groupservice.dto.GroupUserDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
-import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupUserDto
 import com.scrumdapp.groupservice.exceptions.BadRequestException
