@@ -140,20 +140,16 @@ class GroupService(
         return GroupMapper.toResponseDto(group)
     }
 
-    fun deleteUser(groupId: Long, dto: GroupUserDto, currentUserId: Long): Boolean {
-        val existing = groupRepository.findById(groupId)
-            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+    fun deleteUser(groupId: Long, userId: Long, currentUserId: Long): Boolean {
+        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId).firstOrNull()
 
-        if (existing.group_owner != currentUserId) {
-            throw ForbiddenException("You are not the owner of this group")
-        }
-        val exists = groupUsersRepository.existsByGroupIdAndUser(groupId, dto.userId)
-
-        if (exists) {
-            val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(dto.userId, groupId)[0]
+        if (groupUser != null) {
+            if(userId == currentUserId) {
+                throw BadRequestException("You cannot remove yourself")
+            }
             groupUsersRepository.delete(groupUser)
         } else {
-            throw NotFoundException("User with id ${dto.userId} not found")
+            throw NotFoundException("User with id $userId not found")
         }
 
         return true

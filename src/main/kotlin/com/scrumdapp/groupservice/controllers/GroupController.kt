@@ -8,6 +8,8 @@ import com.scrumdapp.groupservice.dto.PartialUserDto
 import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.exceptions.BadRequestException
+import com.scrumdapp.groupservice.exceptions.ForbiddenException
+import com.scrumdapp.groupservice.exceptions.ServerException
 import com.scrumdapp.groupservice.services.GroupService
 import com.scrumdapp.passportplugin.annotations.Passport
 import com.scrumdapp.passportplugin.jwt.PassportContent
@@ -40,7 +42,7 @@ class GroupController(
     fun getByUserId(
         @PathVariable userId: Long,
 
-    ): List<GroupResponseDto> {
+        ): List<GroupResponseDto> {
         return groupService.getAll(userId)
     }
 
@@ -60,16 +62,10 @@ class GroupController(
         @Valid @RequestBody dto: UpdateGroupDto,
         @Passport passport: PassportContent
     ): GroupResponseDto {
+        val roles = passport.roles ?: throw ServerException("No roles found")
+        if (dto.name != null && !roles.contains("COACH")) throw ForbiddenException("You cannot change the groups name")
+        if (dto.is_active != null && !roles.contains("COACH")) throw ForbiddenException("You cannot change the groups active state")
         return groupService.update(groupId, dto, passport.userId.toLong())
-    }
-
-    @PatchMapping("/{groupId}/background")
-    fun updateBackground(
-        @PathVariable groupId: Long,
-        @Valid @RequestBody dto: UpdateBackgroundGroupDto,
-        @Passport passport: PassportContent
-    ): GroupResponseDto {
-        return groupService.updateBackground(groupId, dto, passport.userId.toLong())
     }
 
     @PostMapping("/{groupId}/users")
@@ -91,6 +87,16 @@ class GroupController(
         return groupService.getPartialUsers(groupId, passport.userId.toLong())
     }
 
+    @DeleteMapping("/{groupId}/users/{userId}")
+    fun deleteUser(
+        @PathVariable groupId: Long,
+        @PathVariable userId: Long,
+        @Passport passport: PassportContent
+    ): ResponseEntity<Void> {
+        groupService.deleteUser(groupId, userId, passport.userId.toLong())
+        return ResponseEntity.noContent().build()
+    }
+
     @DeleteMapping("/{groupId}")
     fun delete(
         @PathVariable groupId: Long,
@@ -98,15 +104,5 @@ class GroupController(
     ): ResponseEntity<Void> {
         groupService.deactivate(groupId, passport)
         return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/{groupId}/users")
-    fun deleteUser(
-        @PathVariable groupId: Long,
-        @Valid @RequestBody dto: GroupUserDto,
-        @Passport passport: PassportContent
-    ): Boolean {
-        val groupDto = GroupUserDto(dto.userId, groupId)
-        return groupService.deleteUser(groupId, groupDto, passport.userId.toLong())
     }
 }
