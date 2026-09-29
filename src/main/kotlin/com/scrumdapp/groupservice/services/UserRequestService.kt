@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PartialUser(
     val id: Long,
-    val name: String
+    val name: String,
 )
 
 @Service

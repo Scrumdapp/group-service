@@ -8,6 +8,7 @@ import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.Group
 import com.scrumdapp.groupservice.entities.GroupFeature
+import com.scrumdapp.groupservice.entities.GroupUsers
 import com.scrumdapp.groupservice.services.PartialUser
 
 object GroupMapper {
@@ -43,18 +44,14 @@ object GroupMapper {
             dto.is_active?.let { is_active = it }
         }
 
-    fun updateBackgroundFromDto(group: Group, dto: UpdateBackgroundGroupDto): Group =
-        group.apply {
-            dto.background_preference?.let { background_preference = it }
-        }
-
-    fun toGroupUserResponseDto(groupId: Long, user: PartialUser): PartialUserDto {
+    fun toGroupUserResponseDto(groupId: Long, user: PartialUser, groupUser: GroupUsers): PartialUserDto {
         val fullName = user.name.split(" ")
         return PartialUserDto(
             group_id = groupId,
             user_id = user.id,
             first_name = fullName[0],
-            last_name = fullName.drop(1).joinToString()
+            last_name = fullName.drop(1).joinToString(" "),
+            is_ghost = groupUser.isGhost
         )
     }
 }
