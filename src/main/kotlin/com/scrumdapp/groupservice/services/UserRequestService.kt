@@ -2,7 +2,7 @@ package com.scrumdapp.groupservice.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.scrumdapp.groupservice.exceptions.BadRequestException
-import com.scrumdapp.groupservice.exceptions.ServerException
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -31,11 +31,15 @@ class UserRequestService(
 
     private val mapper = ObjectMapper()
 
+    private val logger = LoggerFactory.getLogger(this.javaClass)
+
     fun fetchUsers(jwt: Jwt, ids: List<Long>): List<PartialUser> {
 
         val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
 
         try {
+            logger.debug("Sending request to {}", uri)
+
             val res = reqBuilder.get()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer ${jwt.tokenValue}")
@@ -43,6 +47,8 @@ class UserRequestService(
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toEntity<String>()
+
+            logger.debug("Retreived users with code {} and body {}", res.statusCode, res.body ?: "[none]")
 
             if (res.statusCode != HttpStatus.OK) {
                 throw Exception("Unexpected response from user request")
