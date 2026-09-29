@@ -38,7 +38,7 @@ class UserRequestService(
         val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
 
         try {
-            logger.debug("Sending request to {}", uri)
+            logger.warn("Sending request to {}", uri)
 
             val res = reqBuilder.get()
                 .uri(uri)
@@ -48,7 +48,7 @@ class UserRequestService(
                 .retrieve()
                 .toEntity<String>()
 
-            logger.debug("Retreived users with code {} and body {}", res.statusCode, res.body ?: "[none]")
+            logger.warn("Retreived users with code {} and body {}", res.statusCode, res.body ?: "[none]")
 
             if (res.statusCode != HttpStatus.OK) {
                 throw Exception("Unexpected response from user request")
