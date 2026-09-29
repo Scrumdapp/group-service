@@ -4,7 +4,6 @@ import com.scrumdapp.groupservice.dto.CreateGroupDto
 import com.scrumdapp.groupservice.dto.GroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialGroupResponseDto
 import com.scrumdapp.groupservice.dto.PartialUserDto
-import com.scrumdapp.groupservice.dto.UpdateBackgroundGroupDto
 import com.scrumdapp.groupservice.dto.UpdateGroupDto
 import com.scrumdapp.groupservice.entities.Group
 import com.scrumdapp.groupservice.entities.GroupFeature
