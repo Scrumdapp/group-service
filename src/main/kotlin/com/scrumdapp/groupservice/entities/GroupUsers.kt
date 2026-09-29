@@ -15,7 +15,7 @@ class GroupUsers {
 
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
-    var groupId: Group = Group()
+    var group: Group = Group()
 
     @Column(name = "is_ghost", nullable = false)
     var isGhost = false

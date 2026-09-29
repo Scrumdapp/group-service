@@ -8,12 +8,12 @@ import java.util.Optional
 @Repository
 interface GroupUsersRepository : JpaRepository<GroupUsers, Long> {
 
-    fun findDistinctByUserAndGroupId(userId: Long, groupId: Long): List<GroupUsers>
-    fun findByGroupIdAndUser(groupId: Long, userId: Long): Optional<GroupUsers>
+    fun findDistinctByUserIdAndGroupId(userId: Long, groupId: Long): List<GroupUsers>
+    fun findByGroupIdAndUserId(groupId: Long, userId: Long): Optional<GroupUsers>
 
-    fun findByUser(userId: Long): List<GroupUsers>
+    fun findByUserId(userId: Long): List<GroupUsers>
 
     fun findByGroupId(groupId: Long): List<GroupUsers>
 
-    fun existsByGroupIdAndUser(groupId: Long, userId: Long): Boolean
+    fun existsByGroupIdAndUserId(groupId: Long, userId: Long): Boolean
 }

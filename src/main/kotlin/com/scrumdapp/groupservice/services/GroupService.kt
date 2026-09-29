@@ -32,14 +32,14 @@ class GroupService(
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     fun getAll(userId: Long): List<GroupResponseDto> {
-        return groupUsersRepository.findByUser(userId)
-            .map { it.groupId }
+        return groupUsersRepository.findByUserId(userId)
+            .map { it.group }
             .map(GroupMapper::toResponseDto)
     }
 
     fun getAllPartial(userId: Long): List<PartialGroupResponseDto> {
-        return groupUsersRepository.findByUser(userId)
-            .map { it.groupId }
+        return groupUsersRepository.findByUserId(userId)
+            .map { it.group }
             .map { GroupMapper.toPartialDto(it) }
     }
 
@@ -53,11 +53,11 @@ class GroupService(
 
     fun getById(groupId: Long, userId: Long): GroupResponseDto {
 
-        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId)
+        val groupUser = groupUsersRepository.findDistinctByUserIdAndGroupId(userId, groupId)
 
         if (groupUser.isEmpty()) throw ForbiddenException("Insufficient permission to access to this group")
 
-        val group = groupUser[0].groupId ?: throw NotFoundException("Group not found")
+        val group = groupUser[0].group ?: throw NotFoundException("Group not found")
 
         val features = groupFeatureRepository.findByGroupId(group.id)
         return GroupMapper.toResponseDto(group, features)
@@ -69,7 +69,7 @@ class GroupService(
 
         val groupUser = GroupUsers().apply {
             this.userId = userId
-            this.groupId = saved
+            this.group = saved
         }
         groupUsersRepository.save(groupUser)
 
@@ -96,12 +96,12 @@ class GroupService(
 
         if (!validateInviteSafetyToken(safetyCode)) throw BadRequestException("Provided token is invalid")
 
-        val exists = groupUsersRepository.existsByGroupIdAndUser(groupId, userId)
+        val exists = groupUsersRepository.existsByGroupIdAndUserId(groupId, userId)
 
         if (!exists) {
             val groupUser = GroupUsers().apply {
                 this.userId = userId
-                this.groupId = group
+                this.group = group
             }
             groupUsersRepository.save(groupUser)
         }
@@ -110,7 +110,7 @@ class GroupService(
     }
 
     fun updateUser(groupId: Long, userId: Long, updateUserBody: UpdateGroupUserDto) {
-        val groupUser = groupUsersRepository.findByGroupIdAndUser(groupId, userId)
+        val groupUser = groupUsersRepository.findByGroupIdAndUserId(groupId, userId)
             .orElseThrow { NotFoundException("The user was not found") }
 
         if  (updateUserBody.is_ghost != null) {
