@@ -5,5 +5,5 @@ data class PartialUserDto (
     val groupId: Long,
     val firstName: String,
     val lastName: String,
-    val ghost: Boolean
+    val isGhost: Boolean
 )
