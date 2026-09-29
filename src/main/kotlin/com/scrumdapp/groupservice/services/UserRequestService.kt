@@ -38,8 +38,6 @@ class UserRequestService(
         val uri = "$fetchEndpoint?ids=${ids.joinToString(",")}"
 
         try {
-            logger.warn("Sending request to {}", uri)
-
             val res = reqBuilder.get()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer ${jwt.tokenValue}")
@@ -47,8 +45,6 @@ class UserRequestService(
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toEntity<String>()
-
-            logger.warn("Retreived users with code {} and body {}", res.statusCode, res.body ?: "[none]")
 
             if (res.statusCode != HttpStatus.OK) {
                 throw Exception("Unexpected response from user request")
