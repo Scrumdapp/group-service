@@ -11,11 +11,11 @@ class GroupUsers {
     var id: Long = 0
 
     @Column(name = "user_id", nullable = false)
-    var user: Long = 0
+    var userId: Long = 0
 
     @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
-    var group: Group = Group()
+    var groupId: Group = Group()
 
     @Column(name = "is_ghost", nullable = false)
     var isGhost = false

@@ -19,7 +19,6 @@ import com.scrumdapp.passportplugin.jwt.PassportContent
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
-import kotlin.math.log
 
 @Service
 class GroupService(
@@ -34,25 +33,22 @@ class GroupService(
 
     fun getAll(userId: Long): List<GroupResponseDto> {
         return groupUsersRepository.findByUser(userId)
-            .map { it.group }
+            .map { it.groupId }
             .map(GroupMapper::toResponseDto)
     }
 
     fun getAllPartial(userId: Long): List<PartialGroupResponseDto> {
         return groupUsersRepository.findByUser(userId)
-            .map { it.group }
+            .map { it.groupId }
             .map { GroupMapper.toPartialDto(it) }
     }
 
     fun getPartialUsers(groupId: Long, userId: Long): List<PartialUserDto> {
         val groupUsers = groupUsersRepository.findByGroupId(groupId)
-        if (groupUsers.isEmpty() || groupUsers.find { it.user == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
+        if (groupUsers.isEmpty() || groupUsers.find { it.userId == userId } == null) throw ForbiddenException("Insufficient permission to access this group")
 
-        val groupUser = fetchUsernames(groupUsers.map { it.user })
-        logger.warn("Do we still exist?")
-        val mappedUsers = groupUser.map { user -> GroupMapper.toGroupUserResponseDto(groupId, user, groupUsers.find { it.id == user.id }!!) }
-        logger.warn("count: {}, type: {}", mappedUsers.size, mappedUsers::class.qualifiedName)
-        return mappedUsers
+        val namedUsers = fetchUsernames(groupUsers.map { it.userId })
+        return namedUsers.map { user -> GroupMapper.toGroupUserResponseDto(groupId, user, groupUsers.find { it.userId == user.id}!!) }
     }
 
     fun getById(groupId: Long, userId: Long): GroupResponseDto {
@@ -61,7 +57,7 @@ class GroupService(
 
         if (groupUser.isEmpty()) throw ForbiddenException("Insufficient permission to access to this group")
 
-        val group = groupUser[0].group ?: throw NotFoundException("Group not found")
+        val group = groupUser[0].groupId ?: throw NotFoundException("Group not found")
 
         val features = groupFeatureRepository.findByGroupId(group.id)
         return GroupMapper.toResponseDto(group, features)
@@ -72,8 +68,8 @@ class GroupService(
         val saved = groupRepository.save(group)
 
         val groupUser = GroupUsers().apply {
-            this.user = userId
-            this.group = saved
+            this.userId = userId
+            this.groupId = saved
         }
         groupUsersRepository.save(groupUser)
 
@@ -104,8 +100,8 @@ class GroupService(
 
         if (!exists) {
             val groupUser = GroupUsers().apply {
-                this.user = userId
-                this.group = group
+                this.userId = userId
+                this.groupId = group
             }
             groupUsersRepository.save(groupUser)
         }
