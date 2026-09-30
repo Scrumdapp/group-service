@@ -80,6 +80,17 @@ class GroupService(
         val existing = groupRepository.findById(groupId)
             .orElseThrow { NotFoundException("Group with id $groupId not found") }
 
+        dto.background_preference?.let {
+            if (!GroupBackgroundService.exists(it)) {
+                throw BadRequestException("Background not found")
+            }
+
+            existing.background_preference = it
+
+            val saved = groupRepository.save(existing)
+            return GroupMapper.toResponseDto(saved)
+        }
+
         if (existing.group_owner != currentUserId) {
             throw ForbiddenException("You are not the owner of this group")
         }
@@ -109,6 +120,25 @@ class GroupService(
         return GroupMapper.toResponseDto(group)
     }
 
+    fun deleteUser(groupId: Long, userId: Long, currentUserId: Long): Boolean {
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+
+        if(group.group_owner != currentUserId) {
+            throw ForbiddenException("You are not the owner of this group")
+        }
+
+        val groupUser = groupUsersRepository.findByGroupIdAndUser(userId, groupId).orElseThrow {
+            NotFoundException("User with id $userId not found") }
+
+        if(userId == currentUserId) {
+            throw BadRequestException("You cannot delete yourself")
+        }
+        groupUsersRepository.delete(groupUser)
+
+        return true
+    }
+    
     fun updateUser(groupId: Long, userId: Long, updateUserBody: UpdateGroupUserDto) {
         val groupUser = groupUsersRepository.findByGroupIdAndUserId(groupId, userId)
             .orElseThrow { NotFoundException("The user was not found") }

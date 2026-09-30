@@ -87,6 +87,16 @@ class GroupController(
         return groupService.getPartialUsers(groupId, passport.userId.toLong())
     }
 
+    @DeleteMapping("/{groupId}/users/{userId}")
+    fun deleteUser(
+        @PathVariable groupId: Long,
+        @PathVariable userId: Long,
+        @Passport passport: PassportContent
+    ): ResponseEntity<Void> {
+        groupService.deleteUser(groupId, userId, passport.userId.toLong())
+        return ResponseEntity.noContent().build()
+    }
+
     @PatchMapping("/{groupId}/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun updateUser(
