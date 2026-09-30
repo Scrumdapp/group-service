@@ -3,14 +3,14 @@ package com.scrumdapp.groupservice.services
 enum class GroupBackgroundService(
     val value: String
 ) {
-    BACKGROUND_1("7_1"),
-    BACKGROUND_1_2("7_1"),
-    BACKGROUND_2("7_1"),
-    BACKGROUND_4("7_1"),
-    BACKGROUND_5("7_1"),
-    BACKGROUND_6("7_1"),
-    BACKGROUND_6_2("7_1"),
-    BACKGROUND_7("7_1"),
+    BACKGROUND_1("1"),
+    BACKGROUND_1_2("1_2"),
+    BACKGROUND_2("2"),
+    BACKGROUND_4("4"),
+    BACKGROUND_5("5"),
+    BACKGROUND_6("6"),
+    BACKGROUND_6_2("6_2"),
+    BACKGROUND_7("7"),
     BACKGROUND_7_2("7_2"),
     BACKGROUND_8("8"),
     BACKGROUND_9("9"),
