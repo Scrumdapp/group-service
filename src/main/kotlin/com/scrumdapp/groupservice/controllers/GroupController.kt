@@ -42,7 +42,7 @@ class GroupController(
     fun getByUserId(
         @PathVariable userId: Long,
 
-        ): List<GroupResponseDto> {
+    ): List<GroupResponseDto> {
         return groupService.getAll(userId)
     }
 
