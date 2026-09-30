@@ -79,7 +79,7 @@ class GroupService(
 
         dto.background_preference?.let {
             if (!GroupBackgroundService.exists(it)) {
-                throw NotFoundException("Background not found")
+                throw BadRequestException("Background not found")
             }
 
             existing.background_preference = it
@@ -125,9 +125,8 @@ class GroupService(
             throw ForbiddenException("You are not the owner of this group")
         }
 
-        val groupUser = groupUsersRepository.findDistinctByUserAndGroupId(userId, groupId).firstOrNull() ?: throw NotFoundException(
-                "User with id $userId not found"
-            )
+        val groupUser = groupUsersRepository.findByGroupIdAndUser(userId, groupId).orElseThrow {
+            NotFoundException("User with id $userId not found") }
 
         if(userId == currentUserId) {
             throw BadRequestException("You cannot delete yourself")
