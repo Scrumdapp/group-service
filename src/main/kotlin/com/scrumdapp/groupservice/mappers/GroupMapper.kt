@@ -12,21 +12,23 @@ import com.scrumdapp.groupservice.services.PartialUser
 
 object GroupMapper {
 
-    fun toResponseDto(group: Group, features: List<GroupFeature> = emptyList()): GroupResponseDto =
+    fun toResponseDto(group: Group, userCount: Long, features: List<GroupFeature> = emptyList(),): GroupResponseDto =
         GroupResponseDto(
             id = group.id,
             name = group.name,
             group_owner = group.group_owner,
             background_preference = group.background_preference,
             is_active = group.is_active,
-            feature = features.map { it.id }
+            feature = features.map { it.id },
+            user_count = userCount
         )
 
-    fun toPartialDto(group: Group): PartialGroupResponseDto =
+    fun toPartialDto(group: Group, userCount: Long): PartialGroupResponseDto =
         PartialGroupResponseDto(
             id = group.id,
             name = group.name,
-            background_preference = group.background_preference
+            background_preference = group.background_preference,
+            user_count = userCount
         )
 
     fun fromCreateDto(dto: CreateGroupDto, ownerId: Long): Group =
