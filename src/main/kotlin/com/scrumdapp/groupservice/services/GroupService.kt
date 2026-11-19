@@ -32,15 +32,13 @@ class GroupService(
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     fun getAll(userId: Long): List<GroupResponseDto> {
-        return groupUsersRepository.findByUserId(userId)
-            .map { it.group }
-            .map(GroupMapper::toResponseDto)
+        return groupUsersRepository.findGroupsByUserId(userId)
+            .map { GroupMapper.toResponseDto(it.group, it.userCount) }
     }
 
     fun getAllPartial(userId: Long): List<PartialGroupResponseDto> {
-        return groupUsersRepository.findByUserId(userId)
-            .map { it.group }
-            .map { GroupMapper.toPartialDto(it) }
+        return groupUsersRepository.findGroupsByUserId(userId)
+            .map { GroupMapper.toPartialDto(it.group, it.userCount) }
     }
 
     fun getPartialUsers(groupId: Long, userId: Long): List<PartialUserDto> {
@@ -53,14 +51,13 @@ class GroupService(
 
     fun getById(groupId: Long, userId: Long): GroupResponseDto {
 
-        val groupUser = groupUsersRepository.findDistinctByUserIdAndGroupId(userId, groupId)
+        val groupMemberCount = groupUsersRepository.findGroupByGroupIdAndUserId(userId, groupId) ?:
+            throw ForbiddenException("Insufficient permission to access to this group")
 
-        if (groupUser.isEmpty()) throw ForbiddenException("Insufficient permission to access to this group")
-
-        val group = groupUser[0].group ?: throw NotFoundException("Group not found")
+        val group = groupMemberCount.group
 
         val features = groupFeatureRepository.findByGroupId(group.id)
-        return GroupMapper.toResponseDto(group, features)
+        return GroupMapper.toResponseDto(group, groupMemberCount.userCount, features)
     }
 
     fun create(dto: CreateGroupDto, userId: Long): GroupResponseDto {
@@ -73,26 +70,29 @@ class GroupService(
         }
         groupUsersRepository.save(groupUser)
 
-        return GroupMapper.toResponseDto(saved)
+        return GroupMapper.toResponseDto(saved, 1)
     }
 
     fun update(groupId: Long, dto: UpdateGroupDto, currentUserId: Long): GroupResponseDto {
-        val existing = groupRepository.findById(groupId)
-            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+        val existingGroup = groupUsersRepository.findGroupByGroupId(groupId) ?: throw NotFoundException("Group with id $groupId not found")
 
-        if (existing.group_owner != currentUserId) {
+        val group = existingGroup.group
+
+        if (group.group_owner != currentUserId) {
             throw ForbiddenException("You are not the owner of this group")
         }
 
-        val updated = GroupMapper.updateFromDto(existing, dto)
+        val updated = GroupMapper.updateFromDto(group, dto)
         val saved = groupRepository.save(updated)
 
-        return GroupMapper.toResponseDto(saved)
+        return GroupMapper.toResponseDto(saved, userCount = existingGroup.userCount)
     }
 
     fun addUser(groupId: Long, userId: Long, safetyCode: String): GroupResponseDto {
-        val group = groupRepository.findById(groupId)
-            .orElseThrow { NotFoundException("Group with id $groupId not found") }
+        val groupMemberCount = groupUsersRepository.findGroupByGroupId(groupId) ?:
+            throw NotFoundException("Group with id $groupId not found")
+
+        val group = groupMemberCount.group
 
         if (!validateInviteSafetyToken(safetyCode)) throw BadRequestException("Provided token is invalid")
 
@@ -106,7 +106,7 @@ class GroupService(
             groupUsersRepository.save(groupUser)
         }
         
-        return GroupMapper.toResponseDto(group)
+        return GroupMapper.toResponseDto(group, groupMemberCount.userCount)
     }
 
     fun updateUser(groupId: Long, userId: Long, updateUserBody: UpdateGroupUserDto) {
